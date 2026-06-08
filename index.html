@@ -961,6 +961,8 @@ body {
   max-width: 100%;
 }
 .cal-chip.chip-study   { background: var(--surface3); color: var(--text2); border-left: 2px solid var(--slate); }
+.cal-chip.chip-cert    { background: rgba(74,140,92,0.15); color: var(--green-light); border-left: 2px solid var(--green); }
+.cal-chip.chip-messer  { background: rgba(201,168,76,0.1); color: var(--gold); border-left: 2px solid var(--gold-dim); }
 .cal-chip.chip-today   { background: rgba(201,168,76,0.2); color: var(--gold-light); border-left: 2px solid var(--gold); font-weight: 600; }
 .cal-chip.chip-overdue { background: rgba(200,85,85,0.2); color: var(--crimson-light); border-left: 2px solid var(--crimson-light); }
 .cal-chip.chip-checkpoint { background: rgba(201,168,76,0.15); color: var(--gold); border-left: 2px solid var(--gold-dim); font-weight: 600; }
@@ -2342,6 +2344,10 @@ body.study-mode .stat-box {
       <button class="hub-tab" onclick="switchHub('premium')" id="hub-btn-premium">📘 Course Reference</button>
     </div>
     <div style="display:flex;gap:8px;align-items:center;">
+      <div style="position:relative;">
+        <input type="text" id="hub-search-input" placeholder="🔍 Search…" oninput="hubSearch(this.value)" onfocus="document.getElementById('hub-search-results').style.display='block'" onblur="setTimeout(()=>document.getElementById('hub-search-results').style.display='none',200)" style="font-family:'JetBrains Mono',monospace;font-size:.68rem;padding:4px 10px;background:var(--bg);border:1px solid var(--border2);border-radius:2px;color:var(--text);width:160px;outline:none;">
+        <div id="hub-search-results" style="display:none;position:absolute;right:0;top:calc(100% + 4px);width:320px;max-height:320px;overflow-y:auto;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:0 4px 16px rgba(0,0,0,0.3);z-index:9999;"></div>
+      </div>
       <span id="sync-status" style="font-family:'JetBrains Mono',monospace;font-size:.65rem;color:var(--muted);"></span>
       <button style="font-family:'JetBrains Mono',monospace;font-size:.68rem;text-transform:uppercase;letter-spacing:.08em;padding:5px 10px;background:none;border:1px solid var(--border2);border-radius:2px;color:var(--muted);cursor:pointer;" onclick="saveFile()">↓ Save</button>
       <button style="font-family:'JetBrains Mono',monospace;font-size:.68rem;text-transform:uppercase;letter-spacing:.08em;padding:5px 10px;background:none;border:1px solid var(--border2);border-radius:2px;color:var(--muted);cursor:pointer;" onclick="toggleStudyMode()" id="focus-btn">📖 Focus</button>
@@ -2406,6 +2412,7 @@ body.study-mode .stat-box {
   </div>
 
   <div class="stats-grid" id="cp-stats-grid">
+    <div class="stat-box" style="border-color:var(--crimson-light);"><div class="stat-num" id="cp-stat-countdown" style="font-size:1.4rem;">—</div><div class="stat-label">Days to Exam</div></div>
     <div class="stat-box"><div class="stat-num" id="cp-stat-vids">0</div><div class="stat-label">Videos Done</div></div>
     <div class="stat-box"><div class="stat-num" id="cp-stat-vid-pct">0%</div><div class="stat-label">Messer Progress</div></div>
     <div class="stat-box" id="cp-stat-phase-box"><div class="stat-num" id="cp-stat-phase" style="font-size:1.1rem;line-height:1.2;">Phase 1</div><div class="stat-label">Current Phase</div></div>
@@ -2428,6 +2435,12 @@ body.study-mode .stat-box {
   <div class="card">
     <div class="card-title">Overall Progress by Domain</div>
     <div id="cp-domain-bars"></div>
+  </div>
+
+  <div class="card" id="cp-notes-summary" style="display:none;">
+    <div class="card-title">📝 Section Notes</div>
+    <div id="cp-notes-list" style="display:flex;flex-direction:column;gap:8px;margin-top:4px;"></div>
+    <button class="btn btn-sm btn-ghost" style="margin-top:8px;" onclick="switchTabCP('phase2')">Open Lecture Series →</button>
   </div>
 
   <div class="card">
@@ -2913,6 +2926,11 @@ body.study-mode .stat-box {
 <!-- ═══════════════════════════════════════════════════════════ DASHBOARD -->
 <div id="pr-tab-dashboard" class="tab-content active">
 
+  <!-- Hidden containers for schedule functions — keep these even though schedule tab was replaced -->
+  <div id="pr-schedule-weeks" style="display:none;"></div>
+  <div id="pr-current-week-label" style="display:none;"></div>
+  <input id="pr-start-date-input" type="hidden">
+
   <div class="callout callout-blue">
     <span class="callout-icon">📋</span>
     <div><strong>Study Requirements:</strong> Attend 2–3 lectures or one chapter section per session. Record one sentence of notes per lecture. Add new terminology to your Review Lab. Sessions run 20–40 minutes per day.</div>
@@ -2924,6 +2942,7 @@ body.study-mode .stat-box {
 
   <div id="pr-catchup-panel" style="display:none;background:var(--surface);border:1px solid var(--crimson-light);border-radius:10px;padding:18px 20px;margin-bottom:16px;"></div>
   <div class="stats-grid" id="pr-stats-grid">
+    <div class="stat-box" style="border-color:var(--crimson-light);"><div class="stat-num" id="pr-stat-countdown" style="font-size:1.4rem;">—</div><div class="stat-label">Days to Exam</div></div>
     <div class="stat-box"><div class="stat-num" id="pr-stat-vids">0</div>
   <div class="card" id="pr-today-card" style="border-left:3px solid var(--yellow);display:none;">
     <div class="card-title" style="color:var(--yellow);">📅 Today's Session</div>
@@ -3414,9 +3433,9 @@ body.study-mode .stat-box {
 <script id="progress-data" type="application/json">{}</script>
 <script>
 // ── Config ──
-const SUPABASE_URL    = 'https://uodosnjwixwbsyzkkovg.supabase.co/rest/v1/';      // e.g. https://xxxx.supabase.co
-const SUPABASE_ANON   = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVvZG9zbmp3aXh3YnN5emtrb3ZnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA2NDAwNDAsImV4cCI6MjA5NjIxNjA0MH0.tm28ev7T__1xmJ6sTIMVtBDeP_CG9Ws68gJ0R1CMpdk'; // Project Settings → API
-const PASSPHRASE      = 'caffeineandcyber';         // anything you'll remember
+const SUPABASE_URL    = 'YOUR_SUPABASE_URL';      // e.g. https://xxxx.supabase.co
+const SUPABASE_ANON   = 'YOUR_SUPABASE_ANON_KEY'; // Project Settings → API
+const PASSPHRASE      = 'YOUR_PASSPHRASE';         // anything you'll remember
 const DB_TABLE = 'progress';
 const CP_DB_KEY = 'csec701';
 const PR_DB_KEY = 'premium';
@@ -3431,7 +3450,7 @@ const PHASE1_COURSES = [
   {
     id: 'c1', title: 'Course 1 — Foundations of Cybersecurity',
     color: '--d3', bg: '--d3b',
-    url: 'https://www.coursera.org/programs/blacks-in-technology-google-learning-program-qdkyr/learn/foundations-of-cybersecurity?specialization=google-cybersecurity',
+    url: 'https://www.coursera.org/learn/foundations-of-cybersecurity/home/module/1',
     modules: [
       {
         id:'c1m1', title:'Module 1 — Welcome to the Exciting World of Cybersecurity',
@@ -3527,7 +3546,7 @@ const PHASE1_COURSES = [
   {
     id: 'c2', title: 'Course 2 — Play It Safe: Manage Security Risks',
     color: '--d1', bg: '--d1b',
-    url: 'https://www.coursera.org/programs/blacks-in-technology-google-learning-program-qdkyr/learn/manage-security-risks?specialization=google-cybersecurity',
+    url: 'https://www.coursera.org/learn/manage-security-risks/paidmedia?specialization=google-cybersecurity',
     modules: [
       {
         id:'c2m1', title:'Module 1 — Security Domains',
@@ -3629,7 +3648,7 @@ const PHASE1_COURSES = [
   {
     id: 'c3', title: 'Course 3 — Connect and Protect: Networks and Network Security',
     color: '--d4', bg: '--d4b',
-    url: 'https://www.coursera.org/programs/blacks-in-technology-google-learning-program-qdkyr/learn/networks-and-network-security?specialization=google-cybersecurity',
+    url: 'https://www.coursera.org/learn/networks-and-network-security/paidmedia?specialization=google-cybersecurity',
     modules: [
       {
         id:'c3m1', title:'Module 1 — Network Architecture',
@@ -3749,7 +3768,7 @@ const PHASE1_COURSES = [
   {
     id: 'c5', title: 'Course 5 — Assets, Threats, and Vulnerabilities',
     color: '--d2', bg: '--d2b',
-    url: 'https://www.coursera.org/programs/blacks-in-technology-google-learning-program-qdkyr/learn/assets-threats-and-vulnerabilities?specialization=google-cybersecurity',
+    url: 'https://www.coursera.org/learn/assets-threats-and-vulnerabilities/paidmedia?specialization=google-cybersecurity',
     modules: [
       {
         id:'c5m1', title:'Module 1 — Introduction to Asset Security',
@@ -3894,7 +3913,7 @@ const PHASE1_COURSES = [
   {
     id: 'c6', title: 'Course 6 — Sound the Alarm: Detection and Response',
     color: '--d5', bg: '--d5b',
-    url: 'https://www.coursera.org/programs/blacks-in-technology-google-learning-program-qdkyr/learn/detection-and-response?specialization=google-cybersecurity',
+    url: 'https://www.coursera.org/learn/detection-and-response/paidmedia?specialization=google-cybersecurity',
     modules: [
       {
         id:'c6m1', title:'Module 1 — Introduction to Detection and Incident Response',
@@ -4388,191 +4407,191 @@ const DOMAINS = [
 const MESSER_VIDEOS = {
   d1: {
     '0.1 – Introduction': [
-      'How to Pass Your SY0-701 Security+ Exam'
+      { title: 'How to Pass Your SY0-701 Security+ Exam', url: 'https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/how-to-pass-your-sy0-701-security-exam', duration: '10:06' }
     ],
     '1.1 – Security Controls': [
-      'Security Controls'
+      { title: 'Security Controls', url: 'https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/security-controls-sy0-701/', duration: '11:48' }
     ],
     '1.2 – Security Concepts': [
-      'The CIA Triad',
-      'Non-repudiation',
-      'Authentication, Authorization, and Accounting',
-      'Gap Analysis',
-      'Zero Trust',
-      'Physical Security',
-      'Deception and Disruption'
+      { title: 'The CIA Triad', url: 'https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/the-cia-triad-sy0-701/', duration: '5:17' },
+      { title: 'Non-repudiation', url: 'https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/non-repudiation-sy0-701/', duration: '7:57' },
+      { title: 'Authentication, Authorization, and Accounting', url: 'https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/authentication-authorization-and-accounting-sy0-701/', duration: '9:03' },
+      { title: 'Gap Analysis', url: 'https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/gap-analysis-sy0-701/', duration: '6:44' },
+      { title: 'Zero Trust', url: 'https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/zero-trust-sy0-701/', duration: '10:04' },
+      { title: 'Physical Security', url: 'https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/physical-security-sy0-701/', duration: '8:17' },
+      { title: 'Deception and Disruption', url: 'https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/deception-and-disruption-sy0-701/', duration: '4:30' }
     ],
     '1.3 – Change Management': [
-      'Change Management',
-      'Technical Change Management'
+      { title: 'Change Management', url: 'https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/change-management-sy0-701/', duration: '11:22' },
+      { title: 'Technical Change Management', url: 'https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/technical-change-management-sy0-701/', duration: '10:54' }
     ],
     '1.4 – Cryptographic Solutions': [
-      'Public Key Infrastructure',
-      'Encrypting Data',
-      'Key Exchange',
-      'Encryption Technologies',
-      'Obfuscation',
-      'Hashing and Digital Signatures',
-      'Blockchain Technology',
-      'Certificates'
+      { title: 'Public Key Infrastructure', url: 'https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/public-key-infrastructure-sy0-701/', duration: '9:08' },
+      { title: 'Encrypting Data', url: 'https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/encrypting-data-sy0-701/', duration: '9:48' },
+      { title: 'Key Exchange', url: 'https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/key-exchange-sy0-701/', duration: '3:39' },
+      { title: 'Encryption Technologies', url: 'https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/encryption-technologies-sy0-701/', duration: '6:53' },
+      { title: 'Obfuscation', url: 'https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/obfuscation-sy0-701/', duration: '8:00' },
+      { title: 'Hashing and Digital Signatures', url: 'https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/hashing-and-digital-signatures-sy0-701/', duration: '10:24' },
+      { title: 'Blockchain Technology', url: 'https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/blockchain-technology-sy0-701/', duration: '2:22' },
+      { title: 'Certificates', url: 'https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/certificates-sy0-701/', duration: '14:38' }
     ],
   },
   d2: {
     '2.1 – Threat Actors': [
-      'Threat Actors'
+      { title: 'Threat Actors', url: 'https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/threat-actors-sy0-701/', duration: '10:23' }
     ],
     '2.2 – Threat Vectors and Attack Surfaces': [
-      'Common Threat Vectors',
-      'Phishing',
-      'Impersonation',
-      'Watering Hole Attacks',
-      'Other Social Engineering Attacks'
+      { title: 'Common Threat Vectors', url: 'https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/common-threat-vectors-sy0-701/', duration: '17:14' },
+      { title: 'Phishing', url: 'https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/phishing-sy0-701/', duration: '6:32' },
+      { title: 'Impersonation', url: 'https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/impersonation-sy0-701/', duration: '5:52' },
+      { title: 'Watering Hole Attacks', url: 'https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/watering-hole-attacks-sy0-701/', duration: '4:12' },
+      { title: 'Other Social Engineering Attacks', url: 'https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/other-social-engineering-attacks-sy0-701/', duration: '3:29' }
     ],
     '2.3 – Types of Vulnerabilities': [
-      'Memory Injections',
-      'Buffer Overflows',
-      'Race Conditions',
-      'Malicious Updates',
-      'Operating System Vulnerabilities',
-      'SQL Injection',
-      'Cross-site Scripting',
-      'Hardware Vulnerabilities',
-      'Virtualization Vulnerabilities',
-      'Cloud-specific Vulnerabilities',
-      'Supply Chain Vulnerabilities',
-      'Misconfiguration Vulnerabilities',
-      'Mobile Device Vulnerabilities',
-      'Zero-day Vulnerabilities'
+      { title: 'Memory Injections', url: 'https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/memory-injections-sy0-701/', duration: '2:39' },
+      { title: 'Buffer Overflows', url: 'https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/buffer-overflows-sy0-701/', duration: '3:37' },
+      { title: 'Race Conditions', url: 'https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/race-conditions-sy0-701/', duration: '4:58' },
+      { title: 'Malicious Updates', url: 'https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/malicious-updates-sy0-701/', duration: '5:45' },
+      { title: 'Operating System Vulnerabilities', url: 'https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/operating-system-vulnerabilities-sy0-701/', duration: '4:09' },
+      { title: 'SQL Injection', url: 'https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/sql-injection-sy0-701/', duration: '5:09' },
+      { title: 'Cross-site Scripting', url: 'https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/cross-site-scripting-sy0-701/', duration: '8:34' },
+      { title: 'Hardware Vulnerabilities', url: 'https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/hardware-vulnerabilities-sy0-701/', duration: '6:27' },
+      { title: 'Virtualization Vulnerabilities', url: 'https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/virtualization-vulnerabilities-sy0-701/', duration: '5:29' },
+      { title: 'Cloud-specific Vulnerabilities', url: 'https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/cloud-specific-vulnerabilities-sy0-701/', duration: '4:06' },
+      { title: 'Supply Chain Vulnerabilities', url: 'https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/supply-chain-vulnerabilities-sy0-701/', duration: '9:12' },
+      { title: 'Misconfiguration Vulnerabilities', url: 'https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/misconfiguration-vulnerabilities-sy0-701/', duration: '7:09' },
+      { title: 'Mobile Device Vulnerabilities', url: 'https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/mobile-device-vulnerabilities-sy0-701/', duration: '3:23' },
+      { title: 'Zero-day Vulnerabilities', url: 'https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/zero-day-vulnerabilities-sy0-701/', duration: '3:02' }
     ],
     '2.4 – Indicators of Malicious Activity': [
-      'An Overview of Malware',
-      'Viruses and Worms',
-      'Spyware and Bloatware',
-      'Other Malware Types',
-      'Physical Attacks',
-      'Denial of Service',
-      'DNS Attacks',
-      'Wireless Attacks',
-      'On-path Attacks',
-      'Replay Attacks',
-      'Malicious Code',
-      'Application Attacks',
-      'Cryptographic Attacks',
-      'Password Attacks',
-      'Indicators of Compromise'
+      { title: 'An Overview of Malware', url: 'https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/an-overview-of-malware-sy0-701/', duration: '6:06' },
+      { title: 'Viruses and Worms', url: 'https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/viruses-and-worms-sy0-701/', duration: '5:54' },
+      { title: 'Spyware and Bloatware', url: 'https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/spyware-and-bloatware-sy0-701/', duration: '4:21' },
+      { title: 'Other Malware Types', url: 'https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/other-malware-types-sy0-701/', duration: '7:32' },
+      { title: 'Physical Attacks', url: 'https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/physical-attacks-sy0-701/', duration: '4:04' },
+      { title: 'Denial of Service', url: 'https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/denial-of-service-sy0-701/', duration: '6:07' },
+      { title: 'DNS Attacks', url: 'https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/dns-attacks-sy0-701/', duration: '8:57' },
+      { title: 'Wireless Attacks', url: 'https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/wireless-attacks-sy0-701/', duration: '7:55' },
+      { title: 'On-path Attacks', url: 'https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/on-path-attacks-sy0-701/', duration: '5:30' },
+      { title: 'Replay Attacks', url: 'https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/replay-attacks-sy0-701/', duration: '5:45' },
+      { title: 'Malicious Code', url: 'https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/malicious-code-sy0-701/', duration: '3:40' },
+      { title: 'Application Attacks', url: 'https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/application-attacks-sy0-701/', duration: '11:48' },
+      { title: 'Cryptographic Attacks', url: 'https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/cryptographic-attacks-sy0-701/', duration: '9:31' },
+      { title: 'Password Attacks', url: 'https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/password-attacks-sy0-701/', duration: '7:15' },
+      { title: 'Indicators of Compromise', url: 'https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/indicators-of-compromise-sy0-701/', duration: '10:59' }
     ],
     '2.5 – Mitigation Techniques': [
-      'Segmentation and Access Control',
-      'Mitigation Techniques',
-      'Hardening Techniques'
+      { title: 'Segmentation and Access Control', url: 'https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/segmentation-and-access-control-sy0-701/', duration: '6:06' },
+      { title: 'Mitigation Techniques', url: 'https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/mitigation-techniques-sy0-701/', duration: '6:51' },
+      { title: 'Hardening Techniques', url: 'https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/hardening-techniques-sy0-701/', duration: '12:11' }
     ],
   },
   d3: {
     '3.1 – Architecture Models': [
-      'Cloud Infrastructures',
-      'Network Infrastructure Concepts',
-      'Other Infrastructure Concepts',
-      'Infrastructure Considerations'
+      { title: 'Cloud Infrastructures', url: 'https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/cloud-infrastructures-sy0-701/', duration: '9:56' },
+      { title: 'Network Infrastructure Concepts', url: 'https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/network-infrastructure-concepts-sy0-701/', duration: '6:56' },
+      { title: 'Other Infrastructure Concepts', url: 'https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/other-infrastructure-concepts-sy0-701/', duration: '14:24' },
+      { title: 'Infrastructure Considerations', url: 'https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/infrastructure-considerations-sy0-701/', duration: '13:48' }
     ],
     '3.2 – Applying Security Principles': [
-      'Secure Infrastructures',
-      'Intrusion Prevention',
-      'Network Appliances',
-      'Port Security',
-      'Firewall Types',
-      'Secure Communication'
+      { title: 'Secure Infrastructures', url: 'https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/secure-infrastructures-sy0-701/', duration: '5:54' },
+      { title: 'Intrusion Prevention', url: 'https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/intrusion-prevention-sy0-701/', duration: '5:14' },
+      { title: 'Network Appliances', url: 'https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/network-appliances-sy0-701/', duration: '11:56' },
+      { title: 'Port Security', url: 'https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/port-security-sy0-701/', duration: '3:50' },
+      { title: 'Firewall Types', url: 'https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/firewall-types-sy0-701/', duration: '8:00' },
+      { title: 'Secure Communication', url: 'https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/secure-communication-sy0-701/', duration: '9:55' }
     ],
     '3.3 – Protecting Data': [
-      'Data Types and Classifications',
-      'States of Data',
-      'Protecting Data'
+      { title: 'Data Types and Classifications', url: 'https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/data-types-and-classifications-sy0-701/', duration: '5:54' },
+      { title: 'States of Data', url: 'https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/states-of-data-sy0-701/', duration: '6:07' },
+      { title: 'Protecting Data', url: 'https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/protecting-data-sy0-701/', duration: '14:28' }
     ],
     '3.4 – Resiliency and Recovery': [
-      'Resiliency',
-      'Capacity Planning',
-      'Recovery Testing',
-      'Backups',
-      'Power Resiliency'
+      { title: 'Resiliency', url: 'https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/resiliency-sy0-701/', duration: '9:42' },
+      { title: 'Capacity Planning', url: 'https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/capacity-planning-sy0-701/', duration: '3:53' },
+      { title: 'Recovery Testing', url: 'https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/recovery-testing-sy0-701/', duration: '5:18' },
+      { title: 'Backups', url: 'https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/backups-sy0-701/', duration: '12:16' },
+      { title: 'Power Resiliency', url: 'https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/power-resiliency-sy0-701/', duration: '4:02' }
     ],
   },
   d4: {
     '4.1 – Applying Cybersecurity Solutions': [
-      'Application Security',
-      'Secure Baselines',
-      'Hardening Targets',
-      'Securing Wireless and Mobile',
-      'Wireless Security Settings'
+      { title: 'Secure Baselines', url: 'https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/secure-baselines-sy0-701/', duration: '4:11' },
+      { title: 'Hardening Targets', url: 'https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/hardening-targets-sy0-701/', duration: '10:11' },
+      { title: 'Securing Wireless and Mobile', url: 'https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/securing-wireless-and-mobile-sy0-701/', duration: '8:58' },
+      { title: 'Wireless Security Settings', url: 'https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/wireless-security-settings-sy0-701/', duration: '10:54' },
+      { title: 'Application Security', url: 'https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/application-security-sy0-701/', duration: '8:26' }
     ],
     '4.2 – Asset Management': [
-      'Asset Management'
+      { title: 'Asset Management', url: 'https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/asset-management-sy0-701/', duration: '8:37' }
     ],
     '4.3 – Vulnerability Management': [
-      'Vulnerability Scanning',
-      'Threat Intelligence',
-      'Penetration Testing',
-      'Analyzing Vulnerabilities',
-      'Vulnerability Remediation'
+      { title: 'Vulnerability Scanning', url: 'https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/vulnerability-scanning-sy0-701/', duration: '7:45' },
+      { title: 'Threat Intelligence', url: 'https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/threat-intelligence-sy0-701/', duration: '4:46' },
+      { title: 'Penetration Testing', url: 'https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/penetration-testing-sy0-701/', duration: '6:21' },
+      { title: 'Analyzing Vulnerabilities', url: 'https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/analyzing-vulnerabilities-sy0-701/', duration: '10:29' },
+      { title: 'Vulnerability Remediation', url: 'https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/vulnerability-remediation-sy0-701/', duration: '8:45' }
     ],
     '4.4 – Security Monitoring': [
-      'Security Monitoring',
-      'Security Tools'
+      { title: 'Security Monitoring', url: 'https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/security-monitoring-sy0-701/', duration: '10:27' },
+      { title: 'Security Tools', url: 'https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/security-tools-sy0-701/', duration: '14:06' }
     ],
     '4.5 – Enterprise Capabilities': [
-      'Secure Protocols',
-      'Operating System Security',
-      'Firewalls',
-      'Content Filtering',
-      'Email Security',
-      'Monitoring Data',
-      'Endpoint Security'
+      { title: 'Firewalls', url: 'https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/firewalls-sy0-701/', duration: '11:31' },
+      { title: 'Web Filtering', url: 'https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/web-filtering-sy0-701/', duration: '10:00' },
+      { title: 'Operating System Security', url: 'https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/operating-system-security-sy0-701/', duration: '3:22' },
+      { title: 'Secure Protocols', url: 'https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/secure-protocols-sy0-701/', duration: '4:47' },
+      { title: 'Email Security', url: 'https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/email-security-sy0-701/', duration: '7:05' },
+      { title: 'Monitoring Data', url: 'https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/monitoring-data-sy0-701/', duration: '7:25' },
+      { title: 'Endpoint Security', url: 'https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/endpoint-security-sy0-701/', duration: '9:25' }
     ],
     '4.6 – Identity and Access Management': [
-      'Identity and Access Management',
-      'Access Controls',
-      'Multifactor Authentication',
-      'Password Security'
+      { title: 'Identity and Access Management', url: 'https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/identity-and-access-management-sy0-701/', duration: '12:46' },
+      { title: 'Access Controls', url: 'https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/access-controls-sy0-701/', duration: '7:49' },
+      { title: 'Multifactor Authentication', url: 'https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/multifactor-authentication-sy0-701/', duration: '4:29' },
+      { title: 'Password Security', url: 'https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/password-security-sy0-701/', duration: '6:22' }
     ],
     '4.7 – Automation and Orchestration': [
-      'Scripting and Automation'
+      { title: 'Scripting and Automation', url: 'https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/scripting-and-automation-sy0-701/', duration: '8:20' }
     ],
     '4.8 – Incident Response': [
-      'Incident Response',
-      'Incident Planning',
-      'Digital Forensics'
+      { title: 'Incident Response', url: 'https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/incident-response-sy0-701/', duration: '9:14' },
+      { title: 'Incident Planning', url: 'https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/incident-planning-sy0-701/', duration: '6:50' },
+      { title: 'Digital Forensics', url: 'https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/digital-forensics-sy0-701/', duration: '9:54' }
     ],
     '4.9 – Data Sources for Investigations': [
-      'Log Data'
+      { title: 'Log Data', url: 'https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/log-data-sy0-701/', duration: '13:41' }
     ],
   },
   d5: {
     '5.1 – Security Governance': [
-      'Security Policies',
-      'Security Standards',
-      'Security Procedures',
-      'Security Considerations',
-      'Data Roles and Responsibilities'
+      { title: 'Security Policies', url: 'https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/security-policies-sy0-701/', duration: '11:02' },
+      { title: 'Security Standards', url: 'https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/security-standards-sy0-701/', duration: '5:36' },
+      { title: 'Security Procedures', url: 'https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/security-procedures-sy0-701/', duration: '7:02' },
+      { title: 'Security Considerations', url: 'https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/security-considerations-sy0-701/', duration: '4:51' },
+      { title: 'Data Roles and Responsibilities', url: 'https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/data-roles-and-responsibilities-sy0-701/', duration: '2:27' }
     ],
     '5.2 – Risk Management': [
-      'Risk Management',
-      'Risk Analysis',
-      'Risk Management Strategies',
-      'Business Impact Analysis'
+      { title: 'Risk Management', url: 'https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/risk-management-sy0-701/', duration: '3:30' },
+      { title: 'Risk Analysis', url: 'https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/risk-analysis-sy0-701/', duration: '9:13' },
+      { title: 'Risk Management Strategies', url: 'https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/risk-management-strategies-sy0-701/', duration: '3:12' },
+      { title: 'Business Impact Analysis', url: 'https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/business-impact-analysis-sy0-701/', duration: '2:55' }
     ],
     '5.3 – Third-party Risk': [
-      'Third-party Risk Assessment',
-      'Agreement Types'
+      { title: 'Third-party Risk Assessment', url: 'https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/third-party-risk-assessment-sy0-701/', duration: '11:36' },
+      { title: 'Agreement Types', url: 'https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/agreement-types-sy0-701/', duration: '5:19' }
     ],
     '5.4 – Compliance': [
-      'Compliance',
-      'Privacy'
+      { title: 'Compliance', url: 'https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/compliance-sy0-701/', duration: '8:06' },
+      { title: 'Privacy', url: 'https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/privacy-sy0-701/', duration: '5:21' }
     ],
     '5.5 – Audits and Assessments': [
-      'Audits and Assessments',
-      'Penetration Tests'
+      { title: 'Audits and Assessments', url: 'https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/audits-and-assessments-sy0-701/', duration: '2:49' },
+      { title: 'Penetration Tests', url: 'https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/penetration-tests-sy0-701/', duration: '5:29' }
     ],
     '5.6 – Security Awareness': [
-      'Security Awareness',
-      'User Training'
+      { title: 'Security Awareness', url: 'https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/security-awareness-sy0-701/', duration: '6:45' },
+      { title: 'User Training', url: 'https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/user-training-sy0-701/', duration: '4:31' }
     ],
   }
 };
@@ -4920,13 +4939,27 @@ function toggleP1(id, cb) {
 
 function toggleTask(key, cb) {
   if (!cpState.tasks) cpState.tasks = {};
+  if (cb.checked) recordActivityToday();
   if (!prState.objChecks) prState.objChecks = {};
   if (!prState.weakAreas) prState.weakAreas = [];
-  cpState.tasks[key] = { checked: cb.checked };
+  const taskDate = cb.checked ? new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : '';
+  cpState.tasks[key] = { checked: cb.checked, date: taskDate };
   const label = document.querySelector(`label[for="task-${key}"]`);
   if (label) {
     label.style.textDecoration = cb.checked ? 'line-through' : 'none';
     label.style.color = cb.checked ? 'var(--muted)' : '';
+    let taskDateSpan = label.querySelector('.task-date-stamp');
+    if (cb.checked && taskDate) {
+      if (!taskDateSpan) {
+        taskDateSpan = document.createElement('span');
+        taskDateSpan.className = 'task-date-stamp';
+        taskDateSpan.style.cssText = 'font-family:var(--font-mono);font-size:0.62rem;color:var(--dim);margin-left:8px;text-decoration:none;display:inline-block;';
+        label.appendChild(taskDateSpan);
+      }
+      taskDateSpan.textContent = '✓ ' + taskDate;
+    } else if (taskDateSpan) {
+      taskDateSpan.remove();
+    }
   }
   updateDashboard();
 }
@@ -5000,7 +5033,7 @@ function renderDomainSections(domain, sections, sectionKeys) {
       row.innerHTML = `
         <input type="checkbox" id="v-${key}" ${checked ? 'checked' : ''} onchange="toggleVideo('${key}','${domain.id}',this)">
         <div class="video-num">#${vi+1}</div>
-        <label class="video-label" for="v-${key}">${title}${duration ? `<span style="font-family:var(--font-mono);font-size:0.65rem;color:var(--muted);margin-left:6px;">${duration}</span>` : ''}${url ? ` <a href="${url}" target="_blank" onclick="event.stopPropagation();" style="color:var(--accent);font-size:0.72rem;text-decoration:none;margin-left:6px;font-family:var(--font-mono);">▶ Watch</a>` : ''}</label>
+        <label class="video-label" for="v-${key}">${title}${duration ? `<span style="font-family:var(--font-mono);font-size:0.65rem;color:var(--muted);margin-left:6px;">${duration}</span>` : ''}${url ? ` <a href="${url}" target="_blank" onclick="event.stopPropagation();" style="color:var(--accent);font-size:0.72rem;text-decoration:none;margin-left:6px;font-family:var(--font-mono);">▶ Watch</a>` : ''}${checked && cpState.videos[key].date ? `<span style="font-family:var(--font-mono);font-size:0.62rem;color:var(--dim);margin-left:10px;">✓ ${cpState.videos[key].date}</span>` : ''}</label>
       `;
       block.appendChild(row);
     });
@@ -5031,8 +5064,26 @@ function renderDomainSections(domain, sections, sectionKeys) {
 }
 
 function toggleVideo(key, domainId, cb) {
-  cpState.videos[key] = { checked: cb.checked };
+  const videoDate = cb.checked ? new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : '';
+  cpState.videos[key] = { checked: cb.checked, date: videoDate };
+  if (cb.checked) recordActivityToday();
   document.getElementById('vr-' + key).classList.toggle('checked', cb.checked);
+  // Update date span in DOM directly — renderPhase2 is not called on every toggle
+  const label = document.querySelector(`label[for="v-${key}"]`);
+  if (label) {
+    let dateSpan = label.querySelector('.video-date-stamp');
+    if (cb.checked && videoDate) {
+      if (!dateSpan) {
+        dateSpan = document.createElement('span');
+        dateSpan.className = 'video-date-stamp';
+        dateSpan.style.cssText = 'font-family:var(--font-mono);font-size:0.62rem;color:var(--dim);margin-left:10px;';
+        label.appendChild(dateSpan);
+      }
+      dateSpan.textContent = '✓ ' + videoDate;
+    } else if (dateSpan) {
+      dateSpan.remove();
+    }
+  }
   updateDomainProgress(domainId);
   updateDashboard();
 }
@@ -5420,14 +5471,40 @@ function renderTodayCard() {
   }
 
   card.style.display = 'block';
+
+  // Calculate completion for today's tasks
+  const totalTasks = todayDayData.tasks.length;
+  const doneTasks = todayDayData.tasks.filter((_, ti) => {
+    const tk = `w${todayWeek.num}-${todayName}-t${ti}`;
+    return cpState.tasks?.[tk]?.checked;
+  }).length;
+  const pct = totalTasks ? Math.round(doneTasks / totalTasks * 100) : 0;
+  const allDone = doneTasks === totalTasks;
+
   tasksEl.innerHTML = `
-    <div style="font-family:var(--font-mono);font-size:0.72rem;color:var(--muted);margin-bottom:10px;text-transform:uppercase;letter-spacing:0.08em;">${todayWeek.label} · ${todayName} · ${fmtDate(t)} · ${todayWeek.theme}</div>
-    ${todayDayData.tasks.map(task => `
-      <div style="display:flex;gap:10px;align-items:baseline;padding:5px 0;border-bottom:1px solid var(--border);">
-        <span style="color:var(--gold-dim);flex-shrink:0;">—</span>
-        <span style="font-size:0.9rem;color:var(--text);line-height:1.5;">${task}</span>
+    <div style="font-family:var(--font-mono);font-size:0.72rem;color:var(--muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.08em;">${todayWeek.label} · ${todayName} · ${fmtDate(t)} · ${(()=>{
+      const CLINKS={'Course 1':'https://www.coursera.org/learn/foundations-of-cybersecurity/home/module/1','Course 2':'https://www.coursera.org/learn/manage-security-risks/paidmedia?specialization=google-cybersecurity','Course 3':'https://www.coursera.org/learn/networks-and-network-security/paidmedia?specialization=google-cybersecurity','Course 5':'https://www.coursera.org/learn/assets-threats-and-vulnerabilities/paidmedia?specialization=google-cybersecurity','Course 6':'https://www.coursera.org/learn/detection-and-response/paidmedia?specialization=google-cybersecurity'};
+      const key=Object.keys(CLINKS).find(k=>todayWeek.theme.includes(k));
+      return key?todayWeek.theme.replace(key,'<a href="'+CLINKS[key]+'" target="_blank" style="color:var(--accent);text-decoration:none;">'+key+'</a>'):todayWeek.theme;
+    })()}</div>
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+      <div style="flex:1;height:6px;background:var(--border);border-radius:3px;overflow:hidden;">
+        <div style="height:100%;width:${pct}%;background:${allDone ? 'var(--green)' : 'var(--gold)'};border-radius:3px;transition:width .3s;"></div>
       </div>
-    `).join('')}
+      <span style="font-family:var(--font-mono);font-size:0.7rem;color:${allDone ? 'var(--green)' : 'var(--gold)'};font-weight:600;white-space:nowrap;">${doneTasks}/${totalTasks}${allDone ? ' ✓' : ''}</span>
+    </div>
+    ${todayDayData.tasks.map((task, ti) => {
+      const tk = 'w' + todayWeek.num + '-' + todayName + '-t' + ti;
+      const done = cpState.tasks?.[tk]?.checked;
+      const bullet = done ? '✓' : '—';
+      const col = done ? 'var(--green)' : 'var(--gold-dim)';
+      const textCol = done ? 'var(--muted)' : 'var(--text)';
+      const strike = done ? 'line-through' : 'none';
+      return '<div style="display:flex;gap:10px;align-items:baseline;padding:5px 0;border-bottom:1px solid var(--border);">'
+        + '<span style="color:' + col + ';flex-shrink:0;">' + bullet + '</span>'
+        + '<span style="font-size:0.9rem;color:' + textCol + ';line-height:1.5;text-decoration:' + strike + ';">' + task + '</span>' + (done && cpState.tasks?.[tk]?.date ? '<span style="font-family:var(--font-mono);font-size:0.62rem;color:var(--dim);margin-left:8px;">✓ ' + cpState.tasks[tk].date + '</span>' : '')
+        + '</div>';
+    }).join('')}
   `;
 }
 
@@ -5497,6 +5574,15 @@ function updateDashboard() {
   const streakEl = document.getElementById('cp-stat-streak');
   if (streakEl) streakEl.textContent = streak > 0 ? '🔥 ' + streak : '—';
 
+  // Countdown to exam
+  const EXAM_TARGET = new Date(2026, 9, 5); // Oct 5, 2026
+  const daysLeft = Math.ceil((EXAM_TARGET - today0()) / 86400000);
+  const cdEl = document.getElementById('cp-stat-countdown');
+  if (cdEl) {
+    cdEl.textContent = daysLeft > 0 ? daysLeft : daysLeft === 0 ? '📅' : '✓';
+    cdEl.style.color = daysLeft <= 30 ? 'var(--crimson-light)' : daysLeft <= 60 ? 'var(--gold)' : '';
+  }
+
   // Current week deadline stat
   const cwEl = document.getElementById('cp-stat-current-week');
   const cwLabelEl = document.getElementById('cp-stat-deadline-label');
@@ -5528,6 +5614,7 @@ function updateDashboard() {
   }
 
   renderTodayCard();
+  renderNotesSummary();
 
   // Domain bars — dashboard
   const barsEl = document.getElementById('cp-domain-bars');
@@ -5625,18 +5712,27 @@ function highlightCurrentWeek() {
 // ═══════════════════════════════════════════════════════ STREAK
 
 function computeStreak() {
-  // Collect all activity dates from anki sessions + video checks
   const dates = new Set();
-  (cpState.anki || []).forEach(s => { if (s.date) dates.add(s.date.split(',')[0].trim()); });
-  // Check video activity dates — use today's date if any video checked
-  // (we don't store per-video dates, so we use anki as the primary signal)
+  const fmtD = d => { const x = new Date(d); x.setHours(0,0,0,0); return x.toDateString(); };
+  // Anki sessions
+  (cpState.anki || []).forEach(s => { if (s.date) dates.add(fmtD(new Date(s.date.split(',')[0].trim()))); });
+  // Video checks — record today if any video was checked today
+  const todayStr = fmtD(new Date());
+  if (Object.values(cpState.videos || {}).some(v => v?.checked)) {
+    // We don't store per-video dates so add today if any video is checked
+    // Use activityDates store for precise tracking
+    if (cpState.activityDates) {
+      cpState.activityDates.forEach(d => dates.add(fmtD(new Date(d))));
+    }
+  }
+  // Task completions
+  if (cpState.activityDates) {
+    cpState.activityDates.forEach(d => dates.add(fmtD(new Date(d))));
+  }
   if (dates.size === 0) return 0;
-  // Sort dates descending
   const sorted = Array.from(dates).map(d => new Date(d)).sort((a, b) => b - a);
-  const today = new Date();
-  today.setHours(0,0,0,0);
+  const today = new Date(); today.setHours(0,0,0,0);
   const yesterday = new Date(today); yesterday.setDate(today.getDate()-1);
-  // Streak only counts if last activity was today or yesterday
   const last = new Date(sorted[0]); last.setHours(0,0,0,0);
   if (last < yesterday) return 0;
   let streak = 1;
@@ -5648,6 +5744,16 @@ function computeStreak() {
     else break;
   }
   return streak;
+}
+
+function recordActivityToday() {
+  if (!cpState.activityDates) cpState.activityDates = [];
+  const today = new Date().toDateString();
+  if (!cpState.activityDates.includes(today)) {
+    cpState.activityDates.push(today);
+    // Keep last 365 days only
+    if (cpState.activityDates.length > 365) cpState.activityDates.shift();
+  }
 }
 
 // ═══════════════════════════════════════════════════════ EXAM NOTES
@@ -5664,7 +5770,7 @@ const WEEKS = [
   // ── PHASE 1: GOOGLE CERT ──────────────────────────────────────────────────
 
   {
-    num: 1, label: 'Week 1', theme: 'Google Cert — Course 1: Foundations',
+    num: 1, label: 'Week 1', theme: 'Google Cert — Course 1: Foundations', courseUrl: 'https://www.coursera.org/learn/foundations-of-cybersecurity/home/module/1',
     color: '--d3', bg: '--d3b',
     days: [
       { day:'Mon', tasks:['C1 M1 — Welcome to Cybersecurity (30–45 min)', 'Anki: create Personal Vocab deck, add new terms (10 min)'] },
@@ -5677,7 +5783,7 @@ const WEEKS = [
     note: 'Google Cert only — no Messer yet. Work through each module fully before moving on. This material will feel easy at your level — that is fine. Let it build the vocabulary. Add every new term to Anki as you go.'
   },
   {
-    num: 2, label: 'Week 2', theme: 'Google Cert — Course 2: Security Risks',
+    num: 2, label: 'Week 2', theme: 'Google Cert — Course 2: Security Risks', courseUrl: 'https://www.coursera.org/learn/manage-security-risks/paidmedia?specialization=google-cybersecurity',
     color: '--d3', bg: '--d3b',
     days: [
       { day:'Mon', tasks:['C2 M1 — Security Domains (30–45 min)', 'Anki review (10 min)'] },
@@ -5690,7 +5796,7 @@ const WEEKS = [
     note: 'Course 2 introduces the CISSP domains, NIST frameworks, and SIEM tools at a surface level. These are directly tested on Security+ — the repetition later in Messer will make these stick permanently.'
   },
   {
-    num: 3, label: 'Week 3', theme: 'Google Cert — Course 3: Networks',
+    num: 3, label: 'Week 3', theme: 'Google Cert — Course 3: Networks', courseUrl: 'https://www.coursera.org/learn/networks-and-network-security/paidmedia?specialization=google-cybersecurity',
     color: '--d3', bg: '--d3b',
     days: [
       { day:'Mon', tasks:['C3 M1 — Network Architecture (30–45 min)', 'Anki review (10 min)'] },
@@ -5703,7 +5809,7 @@ const WEEKS = [
     note: 'Course 3 covers network fundamentals, VPNs, firewalls, and hardening — all of which map directly to Messer Sections 3.1, 3.2, and 4.5. When you hit those later, this week will feel like revision.'
   },
   {
-    num: 4, label: 'Week 4', theme: 'Google Cert — Course 5: Assets & Threats',
+    num: 4, label: 'Week 4', theme: 'Google Cert — Course 5: Assets & Threats', courseUrl: 'https://www.coursera.org/learn/assets-threats-and-vulnerabilities/paidmedia?specialization=google-cybersecurity',
     color: '--d3', bg: '--d3b',
     days: [
       { day:'Mon', tasks:['C5 M1 — Introduction to Asset Security (30–45 min)', 'Anki review (10 min)'] },
@@ -5716,7 +5822,7 @@ const WEEKS = [
     note: 'Course 5 is the most Security+-relevant Google Cert course. Asset management, vulnerability types, and threat actors all appear directly on the exam. Pay close attention here.'
   },
   {
-    num: 5, label: 'Week 5', theme: 'Google Cert — Course 6: Detection & Response',
+    num: 5, label: 'Week 5', theme: 'Google Cert — Course 6: Detection & Response', courseUrl: 'https://www.coursera.org/learn/detection-and-response/paidmedia?specialization=google-cybersecurity',
     color: '--d3', bg: '--d3b',
     days: [
       { day:'Mon', tasks:['C6 M1 — Detection and Incident Response (30–45 min)', 'Anki review (10 min)'] },
@@ -6074,7 +6180,9 @@ function renderMonthView(chrome, dayMap, t) {
 
       const theme = entry.week.theme.replace(/^(Messer — |Google Cert — |⚠ CHECKPOINT — |Gauntlet — )/, '');
       const isSatEntry = entry.dayObj.day === 'Sat';
-      const chipCls = entry.status === 'overdue' ? 'chip-overdue' : isSatEntry ? 'chip-sat' : isToday ? 'chip-today' : 'chip-study';
+      const isGoogleCert = entry.week.theme && entry.week.theme.includes('Google Cert');
+      const isMesser = entry.week.theme && (entry.week.theme.includes('Messer') || entry.week.theme.includes('CHECKPOINT') || entry.week.theme.includes('Gauntlet'));
+      const chipCls = entry.status === 'overdue' ? 'chip-overdue' : isSatEntry ? 'chip-sat' : isToday ? 'chip-today' : isGoogleCert ? 'chip-cert' : isMesser ? 'chip-messer' : 'chip-study';
       chips.push({ cls: chipCls, text: `W${entry.week.num} · ${theme}` });
 
       // Show first 2 tasks abbreviated
@@ -6156,7 +6264,7 @@ function renderAgendaPanel(agenda, dayMap, selectedKey, t) {
   item.innerHTML = `
     <div class="cal-agenda-dot" style="background:${statusColor}"></div>
     <div style="flex:1;">
-      <div class="cal-agenda-title">${entry.week.label} · ${entry.week.theme}</div>
+      <div class="cal-agenda-title">${entry.week.label} · ${(()=>{const CL={'Course 1':'https://www.coursera.org/learn/foundations-of-cybersecurity/home/module/1','Course 2':'https://www.coursera.org/learn/manage-security-risks/paidmedia?specialization=google-cybersecurity','Course 3':'https://www.coursera.org/learn/networks-and-network-security/paidmedia?specialization=google-cybersecurity','Course 5':'https://www.coursera.org/learn/assets-threats-and-vulnerabilities/paidmedia?specialization=google-cybersecurity','Course 6':'https://www.coursera.org/learn/detection-and-response/paidmedia?specialization=google-cybersecurity'};const k=Object.keys(CL).find(x=>entry.week.theme.includes(x));return k?entry.week.theme.replace(k,'<a href="'+CL[k]+'" target="_blank" onclick="event.stopPropagation()" style="color:var(--accent);text-decoration:none;">'+k+'</a>'):entry.week.theme;})()}</div>
       <div class="cal-agenda-sub">${statusLabel} · ${entry.dayObj.day}</div>
       <ul class="cal-agenda-tasks">
         ${entry.dayObj.tasks.map(task => `<li>${task}</li>`).join('')}
@@ -6164,6 +6272,7 @@ function renderAgendaPanel(agenda, dayMap, selectedKey, t) {
       ${entry.week.note && (entry.dayObj.day === 'Fri' || entry.dayObj.day === 'Sat') ? `
         <div style="margin-top:8px;font-size:0.8rem;color:var(--muted);font-style:italic;border-top:1px solid var(--border);padding-top:8px;">${entry.week.note}</div>
       ` : ''}
+      ${entry.week.courseUrl ? `<div style="margin-top:8px;"><a href="${entry.week.courseUrl}" target="_blank" style="font-family:var(--font-mono);font-size:0.72rem;color:var(--accent);text-decoration:none;">↗ Open Course on Coursera</a></div>` : ''}
     </div>
   `;
   agenda.appendChild(item);
@@ -6206,8 +6315,9 @@ function renderAgendaView(chrome, dayMap, t) {
     }
 
     if (entry) {
-      const statusColor = entry.status==='overdue'?'var(--crimson-light)':entry.isExam?'var(--green)':entry.isCheckpoint?'var(--gold)':'var(--slate-light)';
-      content.innerHTML += `<div style="font-family:var(--font-head);font-size:0.9rem;font-style:italic;color:var(--text);margin-bottom:4px;">${entry.week.label} · ${entry.week.theme}</div>`;
+      const isCertWeek = entry.week.theme && entry.week.theme.includes('Google Cert');
+      const statusColor = entry.status==='overdue'?'var(--crimson-light)':entry.isExam?'var(--green)':entry.isCheckpoint?'var(--gold)':isCertWeek?'var(--green)':'var(--slate-light)';
+      content.innerHTML += `<div style="font-family:var(--font-head);font-size:0.9rem;font-style:italic;color:var(--text);margin-bottom:4px;">${entry.week.label} · ${(()=>{const CL={'Course 1':'https://www.coursera.org/learn/foundations-of-cybersecurity/home/module/1','Course 2':'https://www.coursera.org/learn/manage-security-risks/paidmedia?specialization=google-cybersecurity','Course 3':'https://www.coursera.org/learn/networks-and-network-security/paidmedia?specialization=google-cybersecurity','Course 5':'https://www.coursera.org/learn/assets-threats-and-vulnerabilities/paidmedia?specialization=google-cybersecurity','Course 6':'https://www.coursera.org/learn/detection-and-response/paidmedia?specialization=google-cybersecurity'};const k=Object.keys(CL).find(x=>entry.week.theme.includes(x));return k?entry.week.theme.replace(k,'<a href="'+CL[k]+'" target="_blank" onclick="event.stopPropagation()" style="color:var(--accent);text-decoration:none;">'+k+'</a>'):entry.week.theme;})()}</div>`;
       content.innerHTML += entry.dayObj.tasks.map(task => `
         <div style="font-size:0.82rem;color:${entry.status==='overdue'?'var(--crimson-light)':'var(--text2)'};margin-bottom:2px;line-height:1.5;">— ${task}</div>
       `).join('');
@@ -6226,7 +6336,7 @@ function renderAgendaView(chrome, dayMap, t) {
 
 function calSelectDay(key, date) {
   calState.selectedKey = key;
-  const panel = document.getElementById('cp-cal-agenda-panel');
+  const panel = document.getElementById('cal-agenda-panel');
   if (panel) {
     const dayMap = buildDayMap();
     renderAgendaPanel(panel, dayMap, key, today0());
@@ -6313,7 +6423,27 @@ function renderCatchupPanel() {
   const overdueWeeks = WEEKS.filter(w => weekStatus(w.num) === 'overdue');
 
   if (overdueWeeks.length === 0) {
-    el.style.display = 'none';
+    // Show proactive protocol reminder during first 2 weeks
+    const currentWeek = WEEKS.find(w => weekStatus(w.num) === 'current');
+    if (currentWeek && currentWeek.num <= 2) {
+      el.style.display = 'block';
+      el.style.borderColor = 'var(--border)';
+      el.innerHTML = `
+        <div style="font-family:var(--font-mono);font-size:0.65rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:8px;">📋 Comeback Protocol — Know Before You Need It</div>
+        <div style="font-size:0.82rem;color:var(--text2);line-height:1.6;">
+          Life happens. If you miss sessions: <strong style="color:var(--text);">do not restart.</strong>
+          Open the Schedule tab, find the last incomplete session, and resume from there.
+          All deadlines stay fixed — the path forward is always the next unchecked task.
+        </div>
+        <div style="display:flex;gap:20px;margin-top:10px;flex-wrap:wrap;">
+          <div style="font-size:0.78rem;color:var(--text2);"><span style="color:var(--green);font-weight:700;">1–3 days missed</span> — resume same week</div>
+          <div style="font-size:0.78rem;color:var(--text2);"><span style="color:var(--gold);font-weight:700;">4–7 days missed</span> — compress the week, keep going</div>
+          <div style="font-size:0.78rem;color:var(--text2);"><span style="color:var(--crimson-light);font-weight:700;">7+ days missed</span> — resume from last checkpoint, skip nothing</div>
+        </div>
+      `;
+    } else {
+      el.style.display = 'none';
+    }
     return;
   }
 
@@ -6398,7 +6528,11 @@ function renderSchedule() {
             <span style="font-family:var(--font-mono);font-size:0.68rem;color:var(--muted);">${dateRange}</span>
             ${badge}
           </div>
-          <div style="font-family:var(--font-head);font-size:0.92rem;font-style:italic;color:var(--text2);">${week.theme}</div>
+          <div style="font-family:var(--font-head);font-size:0.92rem;font-style:italic;color:var(--text2);">${(()=>{
+            const CLINKS={'Course 1':'https://www.coursera.org/learn/foundations-of-cybersecurity/home/module/1','Course 2':'https://www.coursera.org/learn/manage-security-risks/paidmedia?specialization=google-cybersecurity','Course 3':'https://www.coursera.org/learn/networks-and-network-security/paidmedia?specialization=google-cybersecurity','Course 5':'https://www.coursera.org/learn/assets-threats-and-vulnerabilities/paidmedia?specialization=google-cybersecurity','Course 6':'https://www.coursera.org/learn/detection-and-response/paidmedia?specialization=google-cybersecurity'};
+            const key=Object.keys(CLINKS).find(k=>week.theme.includes(k));
+            return key?week.theme.replace(key,`<a href="${CLINKS[key]}" target="_blank" onclick="event.stopPropagation()" style="color:var(--accent);text-decoration:none;">${key}</a>`):week.theme;
+          })()}</div>
         </div>
         <div style="font-family:var(--font-mono);font-size:0.72rem;color:var(--dim);flex-shrink:0;" id="wk-chevron-${week.num}">▼</div>
       </div>
@@ -6441,7 +6575,7 @@ function renderSchedule() {
             const tChecked = cpState.tasks?.[tk]?.checked || false;
             return `<div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:5px;">
               <input type="checkbox" id="task-${tk}" ${tChecked ? 'checked' : ''} onchange="toggleTask('${tk}',this)" style="margin-top:3px;flex-shrink:0;accent-color:var(--gold);">
-              <label for="task-${tk}" style="font-size:0.86rem;line-height:1.5;color:${tChecked ? 'var(--muted)' : effectiveStatus === 'overdue' ? 'var(--text2)' : 'var(--text)'};text-decoration:${tChecked ? 'line-through' : 'none'};cursor:pointer;">${t}</label>
+              <label for="task-${tk}" style="font-size:0.86rem;line-height:1.5;color:${tChecked ? 'var(--muted)' : effectiveStatus === 'overdue' ? 'var(--text2)' : 'var(--text)'};text-decoration:${tChecked ? 'line-through' : 'none'};cursor:pointer;">${t}${tChecked && cpState.tasks?.[tk]?.date ? `<span style="font-family:var(--font-mono);font-size:0.62rem;color:var(--dim);margin-left:8px;text-decoration:none;display:inline-block;">✓ ${cpState.tasks[tk].date}</span>` : ''}</label>
             </div>`;
           }).join('')}
         </div>
@@ -6450,6 +6584,14 @@ function renderSchedule() {
     });
 
     // Note
+    // "Open Course" link if this week has a courseUrl
+    if (week.courseUrl) {
+      const linkEl = document.createElement('div');
+      linkEl.style.cssText = 'padding:6px 18px 2px;';
+      linkEl.innerHTML = `<a href="${week.courseUrl}" target="_blank" style="font-family:var(--font-mono);font-size:0.72rem;color:var(--accent);text-decoration:none;letter-spacing:0.06em;">↗ Open Course on Coursera</a>`;
+      body.appendChild(linkEl);
+    }
+
     if (week.note) {
       const noteEl = document.createElement('div');
       noteEl.style.cssText = `padding:12px 18px;background:${bg};font-size:0.84rem;color:var(--muted);line-height:1.6;font-style:italic;border-top:1px solid var(--border);`;
@@ -6822,13 +6964,115 @@ function PR_renderTerms(list) {
   }).join('');
 }
 
+let _prTermsQuery = '';
 function PR_filterTerms(query) {
+  // Preserve query if called without argument (e.g. from updateDashboard)
+  if (query !== undefined) _prTermsQuery = query;
   const domain = document.getElementById('pr-terms-domain')?.value || '';
-  const q = (query || '').toLowerCase().trim();
+  const q = (_prTermsQuery || '').toLowerCase().trim();
+  // Restore input value in case it was cleared by re-render
+  const searchEl = document.getElementById('pr-terms-search');
+  if (searchEl && searchEl.value !== _prTermsQuery) searchEl.value = _prTermsQuery;
   let filtered = KEY_TERMS;
   if (domain && domain !== 'all') filtered = filtered.filter(t => t.domain === domain);
   if (q) filtered = filtered.filter(t => t.a.toLowerCase().includes(q) || t.d.toLowerCase().includes(q));
   PR_renderTerms(filtered);
+}
+
+
+// ════════════════════════════════════════════════════════════════════
+// GLOBAL SEARCH
+// ════════════════════════════════════════════════════════════════════
+function hubSearch(query) {
+  const el = document.getElementById('hub-search-results');
+  if (!el) return;
+  const q = (query || '').toLowerCase().trim();
+  if (!q || q.length < 2) { el.innerHTML = ''; el.style.display = 'none'; return; }
+  el.style.display = 'block';
+
+  const results = [];
+
+  // Search KEY_TERMS
+  KEY_TERMS.forEach(t => {
+    if (t.a.toLowerCase().includes(q) || t.d.toLowerCase().includes(q)) {
+      results.push({ type: 'term', label: t.a, detail: t.d, action: "switchHub('premium');switchTabPR('anki');PR_filterTerms('" + t.a + "')" });
+    }
+  });
+
+  // Search MESSER_VIDEOS
+  Object.entries(MESSER_VIDEOS).forEach(([domId, sections]) => {
+    Object.entries(sections).forEach(([sectionKey, vids]) => {
+      vids.forEach(vid => {
+        const title = typeof vid === 'object' ? vid.title : vid;
+        const url   = typeof vid === 'object' ? vid.url   : null;
+        if (title.toLowerCase().includes(q)) {
+          results.push({ type: 'video', label: title, detail: sectionKey, url, action: "switchHub('portal');switchTabCP('phase2')" });
+        }
+      });
+    });
+  });
+
+  // Search DOMAINS objectives
+  DOMAINS.forEach(domain => {
+    domain.sections.forEach(section => {
+      (section.objectives || []).forEach(obj => {
+        if (obj.toLowerCase().includes(q) || section.name.toLowerCase().includes(q)) {
+          results.push({ type: 'obj', label: section.name, detail: obj, action: "switchHub('portal');switchTabCP('phase2')" });
+        }
+      });
+    });
+  });
+
+  // Search section notes
+  Object.entries(cpState.sectionNotes || {}).forEach(([key, note]) => {
+    if (note && note.toLowerCase().includes(q)) {
+      results.push({ type: 'note', label: 'Section Note', detail: note.substring(0, 80) + (note.length > 80 ? '…' : ''), action: "switchHub('portal');switchTabCP('phase2')" });
+    }
+  });
+
+  if (!results.length) {
+    el.innerHTML = '<div style="padding:12px 14px;font-size:0.8rem;color:var(--muted);font-family:var(--font-mono);">No results for "' + query + '"</div>';
+    return;
+  }
+
+  const typeIcon = { term:'🔤', video:'▶', obj:'🎯', note:'📝' };
+  const typeColor = { term:'var(--d3)', video:'var(--gold)', obj:'var(--d1)', note:'var(--d5)' };
+
+  el.innerHTML = results.slice(0, 12).map(r => `
+    <div onclick="${r.action}" style="padding:9px 14px;cursor:pointer;border-bottom:1px solid var(--border2);display:flex;gap:10px;align-items:flex-start;" onmouseover="this.style.background='var(--surface2)'" onmouseout="this.style.background=''">
+      <span style="flex-shrink:0;font-size:12px;">${typeIcon[r.type]}</span>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:0.8rem;font-weight:600;color:${typeColor[r.type]};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${r.label}</div>
+        <div style="font-size:0.74rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${r.detail}</div>
+      </div>
+      ${r.url ? `<a href="${r.url}" target="_blank" onclick="event.stopPropagation()" style="flex-shrink:0;font-family:var(--font-mono);font-size:0.68rem;color:var(--gold);text-decoration:none;" >↗</a>` : ''}
+    </div>
+  `).join('') + (results.length > 12 ? `<div style="padding:8px 14px;font-size:0.72rem;color:var(--muted);font-family:var(--font-mono);">+${results.length - 12} more — refine your search</div>` : '');
+}
+
+// ════════════════════════════════════════════════════════════════════
+// NOTES SUMMARY on Dashboard
+// ════════════════════════════════════════════════════════════════════
+function renderNotesSummary() {
+  const card = document.getElementById('cp-notes-summary');
+  const list = document.getElementById('cp-notes-list');
+  if (!card || !list) return;
+
+  const notes = Object.entries(cpState.sectionNotes || {}).filter(([, v]) => v && v.trim());
+  if (!notes.length) { card.style.display = 'none'; return; }
+
+  card.style.display = 'block';
+  list.innerHTML = notes.map(([key, note]) => {
+    // key format: domainId-sectionIdx e.g. d1-0
+    const [domId, si] = key.split('-');
+    const domain = DOMAINS.find(d => d.id === domId);
+    const section = domain?.sections?.[parseInt(si)];
+    const label = section ? section.name : key;
+    return `<div style="padding:8px 12px;background:var(--surface2);border-radius:var(--radius);border-left:3px solid var(--gold);">
+      <div style="font-family:var(--font-mono);font-size:0.65rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px;">${label}</div>
+      <div style="font-size:0.82rem;color:var(--text2);line-height:1.5;">${note.substring(0, 120)}${note.length > 120 ? '…' : ''}</div>
+    </div>`;
+  }).join('');
 }
 
 document.addEventListener('DOMContentLoaded', initCombined);
@@ -7171,7 +7415,7 @@ function PR_renderDomainSections(domain, sections, sectionKeys) {
       row.innerHTML = `
         <input type="checkbox" id="pr-v-${key}" ${checked ? 'checked' : ''} onchange="PR_toggleVideo('${key}','${domain.id}',this)">
         <div class="video-num">#${vi+1}</div>
-        <label class="video-label" for="pr-v-${key}">${title}${duration ? `<span style="font-family:var(--font-mono);font-size:0.65rem;color:var(--muted);margin-left:6px;">${duration}</span>` : ''}${url ? ` <a href="${url}" target="_blank" onclick="event.stopPropagation();" style="color:var(--accent);font-size:0.72rem;text-decoration:none;margin-left:6px;font-family:var(--font-mono);">▶ Watch</a>` : ''}</label>
+        <label class="video-label" for="pr-v-${key}">${title}${duration ? `<span style="font-family:var(--font-mono);font-size:0.65rem;color:var(--muted);margin-left:6px;">${duration}</span>` : ''}${url ? ` <a href="${url}" target="_blank" onclick="event.stopPropagation();" style="color:var(--accent);font-size:0.72rem;text-decoration:none;margin-left:6px;font-family:var(--font-mono);">▶ Watch</a>` : ''}${checked && cpState.videos[key].date ? `<span style="font-family:var(--font-mono);font-size:0.62rem;color:var(--dim);margin-left:10px;">✓ ${cpState.videos[key].date}</span>` : ''}</label>
       `;
       block.appendChild(row);
     });
@@ -7202,7 +7446,24 @@ function PR_renderDomainSections(domain, sections, sectionKeys) {
 }
 
 function PR_toggleVideo(key, domainId, cb) {
-  prState.videos[key] = { checked: cb.checked };
+  const prVideoDate = cb.checked ? new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : '';
+  prState.videos[key] = { checked: cb.checked, date: prVideoDate };
+  // Update date span in DOM directly
+  const prLabel = document.querySelector(`label[for="pr-v-${key}"]`);
+  if (prLabel) {
+    let prDateSpan = prLabel.querySelector('.video-date-stamp');
+    if (cb.checked && prVideoDate) {
+      if (!prDateSpan) {
+        prDateSpan = document.createElement('span');
+        prDateSpan.className = 'video-date-stamp';
+        prDateSpan.style.cssText = 'font-family:var(--font-mono);font-size:0.62rem;color:var(--dim);margin-left:10px;';
+        prLabel.appendChild(prDateSpan);
+      }
+      prDateSpan.textContent = '✓ ' + prVideoDate;
+    } else if (prDateSpan) {
+      prDateSpan.remove();
+    }
+  }
   PR_updateDomainProgress(domainId);
   PR_updateDashboard();
 }
@@ -7627,6 +7888,15 @@ function PR_updateDashboard() {
   const streakEl = document.getElementById('pr-stat-streak');
   if (streakEl) streakEl.textContent = streak > 0 ? '🔥 ' + streak : '—';
 
+  // Countdown to exam
+  const EXAM_TARGET = new Date(2026, 9, 5); // Oct 5, 2026
+  const daysLeft = Math.ceil((EXAM_TARGET - today0()) / 86400000);
+  const cdEl = document.getElementById('cp-stat-countdown');
+  if (cdEl) {
+    cdEl.textContent = daysLeft > 0 ? daysLeft : daysLeft === 0 ? '📅' : '✓';
+    cdEl.style.color = daysLeft <= 30 ? 'var(--crimson-light)' : daysLeft <= 60 ? 'var(--gold)' : '';
+  }
+
   // Current week deadline stat
   const cwEl = document.getElementById('pr-stat-current-week');
   const cwLabelEl = document.getElementById('pr-stat-deadline-label');
@@ -7849,7 +8119,27 @@ function PR_renderCatchupPanel() {
   const overdueWeeks = WEEKS.filter(w => PR_weekStatus(w.num) === 'overdue');
 
   if (overdueWeeks.length === 0) {
-    el.style.display = 'none';
+    // Show proactive protocol reminder during first 2 weeks
+    const currentWeek = WEEKS.find(w => weekStatus(w.num) === 'current');
+    if (currentWeek && currentWeek.num <= 2) {
+      el.style.display = 'block';
+      el.style.borderColor = 'var(--border)';
+      el.innerHTML = `
+        <div style="font-family:var(--font-mono);font-size:0.65rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:8px;">📋 Comeback Protocol — Know Before You Need It</div>
+        <div style="font-size:0.82rem;color:var(--text2);line-height:1.6;">
+          Life happens. If you miss sessions: <strong style="color:var(--text);">do not restart.</strong>
+          Open the Schedule tab, find the last incomplete session, and resume from there.
+          All deadlines stay fixed — the path forward is always the next unchecked task.
+        </div>
+        <div style="display:flex;gap:20px;margin-top:10px;flex-wrap:wrap;">
+          <div style="font-size:0.78rem;color:var(--text2);"><span style="color:var(--green);font-weight:700;">1–3 days missed</span> — resume same week</div>
+          <div style="font-size:0.78rem;color:var(--text2);"><span style="color:var(--gold);font-weight:700;">4–7 days missed</span> — compress the week, keep going</div>
+          <div style="font-size:0.78rem;color:var(--text2);"><span style="color:var(--crimson-light);font-weight:700;">7+ days missed</span> — resume from last checkpoint, skip nothing</div>
+        </div>
+      `;
+    } else {
+      el.style.display = 'none';
+    }
     return;
   }
 
@@ -7934,7 +8224,11 @@ function PR_renderSchedule() {
             <span style="font-family:var(--font-mono);font-size:0.68rem;color:var(--muted);">${dateRange}</span>
             ${badge}
           </div>
-          <div style="font-family:var(--font-head);font-size:0.92rem;font-style:italic;color:var(--text2);">${week.theme}</div>
+          <div style="font-family:var(--font-head);font-size:0.92rem;font-style:italic;color:var(--text2);">${(()=>{
+            const CLINKS={'Course 1':'https://www.coursera.org/learn/foundations-of-cybersecurity/home/module/1','Course 2':'https://www.coursera.org/learn/manage-security-risks/paidmedia?specialization=google-cybersecurity','Course 3':'https://www.coursera.org/learn/networks-and-network-security/paidmedia?specialization=google-cybersecurity','Course 5':'https://www.coursera.org/learn/assets-threats-and-vulnerabilities/paidmedia?specialization=google-cybersecurity','Course 6':'https://www.coursera.org/learn/detection-and-response/paidmedia?specialization=google-cybersecurity'};
+            const key=Object.keys(CLINKS).find(k=>week.theme.includes(k));
+            return key?week.theme.replace(key,`<a href="${CLINKS[key]}" target="_blank" onclick="event.stopPropagation()" style="color:var(--accent);text-decoration:none;">${key}</a>`):week.theme;
+          })()}</div>
         </div>
         <div style="font-family:var(--font-mono);font-size:0.72rem;color:var(--dim);flex-shrink:0;" id="wk-chevron-${week.num}">▼</div>
       </div>
@@ -7977,7 +8271,7 @@ function PR_renderSchedule() {
             const tChecked = cpState.tasks?.[tk]?.checked || false;
             return `<div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:5px;">
               <input type="checkbox" id="task-${tk}" ${tChecked ? 'checked' : ''} onchange="toggleTask('${tk}',this)" style="margin-top:3px;flex-shrink:0;accent-color:var(--gold);">
-              <label for="task-${tk}" style="font-size:0.86rem;line-height:1.5;color:${tChecked ? 'var(--muted)' : effectiveStatus === 'overdue' ? 'var(--text2)' : 'var(--text)'};text-decoration:${tChecked ? 'line-through' : 'none'};cursor:pointer;">${t}</label>
+              <label for="task-${tk}" style="font-size:0.86rem;line-height:1.5;color:${tChecked ? 'var(--muted)' : effectiveStatus === 'overdue' ? 'var(--text2)' : 'var(--text)'};text-decoration:${tChecked ? 'line-through' : 'none'};cursor:pointer;">${t}${tChecked && cpState.tasks?.[tk]?.date ? `<span style="font-family:var(--font-mono);font-size:0.62rem;color:var(--dim);margin-left:8px;text-decoration:none;display:inline-block;">✓ ${cpState.tasks[tk].date}</span>` : ''}</label>
             </div>`;
           }).join('')}
         </div>
@@ -7986,6 +8280,14 @@ function PR_renderSchedule() {
     });
 
     // Note
+    // "Open Course" link if this week has a courseUrl
+    if (week.courseUrl) {
+      const linkEl = document.createElement('div');
+      linkEl.style.cssText = 'padding:6px 18px 2px;';
+      linkEl.innerHTML = `<a href="${week.courseUrl}" target="_blank" style="font-family:var(--font-mono);font-size:0.72rem;color:var(--accent);text-decoration:none;letter-spacing:0.06em;">↗ Open Course on Coursera</a>`;
+      body.appendChild(linkEl);
+    }
+
     if (week.note) {
       const noteEl = document.createElement('div');
       noteEl.style.cssText = `padding:12px 18px;background:${bg};font-size:0.84rem;color:var(--muted);line-height:1.6;font-style:italic;border-top:1px solid var(--border);`;
@@ -8391,12 +8693,113 @@ function PR_renderTerms(list) {
 }
 
 function PR_filterTerms(query) {
+  // Preserve query if called without argument (e.g. from updateDashboard)
+  if (query !== undefined) _prTermsQuery = query;
   const domain = document.getElementById('pr-terms-domain')?.value || '';
-  const q = (query || '').toLowerCase().trim();
+  const q = (_prTermsQuery || '').toLowerCase().trim();
+  // Restore input value in case it was cleared by re-render
+  const searchEl = document.getElementById('pr-terms-search');
+  if (searchEl && searchEl.value !== _prTermsQuery) searchEl.value = _prTermsQuery;
   let filtered = KEY_TERMS;
   if (domain && domain !== 'all') filtered = filtered.filter(t => t.domain === domain);
   if (q) filtered = filtered.filter(t => t.a.toLowerCase().includes(q) || t.d.toLowerCase().includes(q));
   PR_renderTerms(filtered);
+}
+
+
+// ════════════════════════════════════════════════════════════════════
+// GLOBAL SEARCH
+// ════════════════════════════════════════════════════════════════════
+function hubSearch(query) {
+  const el = document.getElementById('hub-search-results');
+  if (!el) return;
+  const q = (query || '').toLowerCase().trim();
+  if (!q || q.length < 2) { el.innerHTML = ''; el.style.display = 'none'; return; }
+  el.style.display = 'block';
+
+  const results = [];
+
+  // Search KEY_TERMS
+  KEY_TERMS.forEach(t => {
+    if (t.a.toLowerCase().includes(q) || t.d.toLowerCase().includes(q)) {
+      results.push({ type: 'term', label: t.a, detail: t.d, action: "switchHub('premium');switchTabPR('anki');PR_filterTerms('" + t.a + "')" });
+    }
+  });
+
+  // Search MESSER_VIDEOS
+  Object.entries(MESSER_VIDEOS).forEach(([domId, sections]) => {
+    Object.entries(sections).forEach(([sectionKey, vids]) => {
+      vids.forEach(vid => {
+        const title = typeof vid === 'object' ? vid.title : vid;
+        const url   = typeof vid === 'object' ? vid.url   : null;
+        if (title.toLowerCase().includes(q)) {
+          results.push({ type: 'video', label: title, detail: sectionKey, url, action: "switchHub('portal');switchTabCP('phase2')" });
+        }
+      });
+    });
+  });
+
+  // Search DOMAINS objectives
+  DOMAINS.forEach(domain => {
+    domain.sections.forEach(section => {
+      (section.objectives || []).forEach(obj => {
+        if (obj.toLowerCase().includes(q) || section.name.toLowerCase().includes(q)) {
+          results.push({ type: 'obj', label: section.name, detail: obj, action: "switchHub('portal');switchTabCP('phase2')" });
+        }
+      });
+    });
+  });
+
+  // Search section notes
+  Object.entries(cpState.sectionNotes || {}).forEach(([key, note]) => {
+    if (note && note.toLowerCase().includes(q)) {
+      results.push({ type: 'note', label: 'Section Note', detail: note.substring(0, 80) + (note.length > 80 ? '…' : ''), action: "switchHub('portal');switchTabCP('phase2')" });
+    }
+  });
+
+  if (!results.length) {
+    el.innerHTML = '<div style="padding:12px 14px;font-size:0.8rem;color:var(--muted);font-family:var(--font-mono);">No results for "' + query + '"</div>';
+    return;
+  }
+
+  const typeIcon = { term:'🔤', video:'▶', obj:'🎯', note:'📝' };
+  const typeColor = { term:'var(--d3)', video:'var(--gold)', obj:'var(--d1)', note:'var(--d5)' };
+
+  el.innerHTML = results.slice(0, 12).map(r => `
+    <div onclick="${r.action}" style="padding:9px 14px;cursor:pointer;border-bottom:1px solid var(--border2);display:flex;gap:10px;align-items:flex-start;" onmouseover="this.style.background='var(--surface2)'" onmouseout="this.style.background=''">
+      <span style="flex-shrink:0;font-size:12px;">${typeIcon[r.type]}</span>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:0.8rem;font-weight:600;color:${typeColor[r.type]};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${r.label}</div>
+        <div style="font-size:0.74rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${r.detail}</div>
+      </div>
+      ${r.url ? `<a href="${r.url}" target="_blank" onclick="event.stopPropagation()" style="flex-shrink:0;font-family:var(--font-mono);font-size:0.68rem;color:var(--gold);text-decoration:none;" >↗</a>` : ''}
+    </div>
+  `).join('') + (results.length > 12 ? `<div style="padding:8px 14px;font-size:0.72rem;color:var(--muted);font-family:var(--font-mono);">+${results.length - 12} more — refine your search</div>` : '');
+}
+
+// ════════════════════════════════════════════════════════════════════
+// NOTES SUMMARY on Dashboard
+// ════════════════════════════════════════════════════════════════════
+function renderNotesSummary() {
+  const card = document.getElementById('cp-notes-summary');
+  const list = document.getElementById('cp-notes-list');
+  if (!card || !list) return;
+
+  const notes = Object.entries(cpState.sectionNotes || {}).filter(([, v]) => v && v.trim());
+  if (!notes.length) { card.style.display = 'none'; return; }
+
+  card.style.display = 'block';
+  list.innerHTML = notes.map(([key, note]) => {
+    // key format: domainId-sectionIdx e.g. d1-0
+    const [domId, si] = key.split('-');
+    const domain = DOMAINS.find(d => d.id === domId);
+    const section = domain?.sections?.[parseInt(si)];
+    const label = section ? section.name : key;
+    return `<div style="padding:8px 12px;background:var(--surface2);border-radius:var(--radius);border-left:3px solid var(--gold);">
+      <div style="font-family:var(--font-mono);font-size:0.65rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px;">${label}</div>
+      <div style="font-size:0.82rem;color:var(--text2);line-height:1.5;">${note.substring(0, 120)}${note.length > 120 ? '…' : ''}</div>
+    </div>`;
+  }).join('');
 }
 
 document.addEventListener('DOMContentLoaded', initCombined);
@@ -9440,6 +9843,8 @@ body {
   max-width: 100%;
 }
 .cal-chip.chip-study   { background: var(--surface3); color: var(--text2); border-left: 2px solid var(--slate); }
+.cal-chip.chip-cert    { background: rgba(74,140,92,0.15); color: var(--green-light); border-left: 2px solid var(--green); }
+.cal-chip.chip-messer  { background: rgba(201,168,76,0.1); color: var(--gold); border-left: 2px solid var(--gold-dim); }
 .cal-chip.chip-today   { background: rgba(201,168,76,0.2); color: var(--gold-light); border-left: 2px solid var(--gold); font-weight: 600; }
 .cal-chip.chip-overdue { background: rgba(200,85,85,0.2); color: var(--crimson-light); border-left: 2px solid var(--crimson-light); }
 .cal-chip.chip-checkpoint { background: rgba(201,168,76,0.15); color: var(--gold); border-left: 2px solid var(--gold-dim); font-weight: 600; }
@@ -10821,6 +11226,10 @@ body.study-mode .stat-box {
       <button class="hub-tab" onclick="switchHub('premium')" id="hub-btn-premium">📘 Course Reference</button>
     </div>
     <div style="display:flex;gap:8px;align-items:center;">
+      <div style="position:relative;">
+        <input type="text" id="hub-search-input" placeholder="🔍 Search…" oninput="hubSearch(this.value)" onfocus="document.getElementById('hub-search-results').style.display='block'" onblur="setTimeout(()=>document.getElementById('hub-search-results').style.display='none',200)" style="font-family:'JetBrains Mono',monospace;font-size:.68rem;padding:4px 10px;background:var(--bg);border:1px solid var(--border2);border-radius:2px;color:var(--text);width:160px;outline:none;">
+        <div id="hub-search-results" style="display:none;position:absolute;right:0;top:calc(100% + 4px);width:320px;max-height:320px;overflow-y:auto;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:0 4px 16px rgba(0,0,0,0.3);z-index:9999;"></div>
+      </div>
       <span id="sync-status" style="font-family:'JetBrains Mono',monospace;font-size:.65rem;color:var(--muted);"></span>
       <button style="font-family:'JetBrains Mono',monospace;font-size:.68rem;text-transform:uppercase;letter-spacing:.08em;padding:5px 10px;background:none;border:1px solid var(--border2);border-radius:2px;color:var(--muted);cursor:pointer;" onclick="saveFile()">↓ Save</button>
       <button style="font-family:'JetBrains Mono',monospace;font-size:.68rem;text-transform:uppercase;letter-spacing:.08em;padding:5px 10px;background:none;border:1px solid var(--border2);border-radius:2px;color:var(--muted);cursor:pointer;" onclick="toggleStudyMode()" id="focus-btn">📖 Focus</button>
@@ -10885,6 +11294,7 @@ body.study-mode .stat-box {
   </div>
 
   <div class="stats-grid" id="cp-stats-grid">
+    <div class="stat-box" style="border-color:var(--crimson-light);"><div class="stat-num" id="cp-stat-countdown" style="font-size:1.4rem;">—</div><div class="stat-label">Days to Exam</div></div>
     <div class="stat-box"><div class="stat-num" id="cp-stat-vids">0</div><div class="stat-label">Videos Done</div></div>
     <div class="stat-box"><div class="stat-num" id="cp-stat-vid-pct">0%</div><div class="stat-label">Messer Progress</div></div>
     <div class="stat-box" id="cp-stat-phase-box"><div class="stat-num" id="cp-stat-phase" style="font-size:1.1rem;line-height:1.2;">Phase 1</div><div class="stat-label">Current Phase</div></div>
@@ -11391,6 +11801,11 @@ body.study-mode .stat-box {
 
 <!-- ═══════════════════════════════════════════════════════════ DASHBOARD -->
 <div id="pr-tab-dashboard" class="tab-content active">
+
+  <!-- Hidden containers for schedule functions — keep these even though schedule tab was replaced -->
+  <div id="pr-schedule-weeks" style="display:none;"></div>
+  <div id="pr-current-week-label" style="display:none;"></div>
+  <input id="pr-start-date-input" type="hidden">
 
   <div class="callout callout-blue">
     <span class="callout-icon">📋</span>
@@ -12216,13 +12631,27 @@ function toggleP1(id, cb) {
 
 function toggleTask(key, cb) {
   if (!cpState.tasks) cpState.tasks = {};
+  if (cb.checked) recordActivityToday();
   if (!prState.objChecks) prState.objChecks = {};
   if (!prState.weakAreas) prState.weakAreas = [];
-  cpState.tasks[key] = { checked: cb.checked };
+  const taskDate = cb.checked ? new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : '';
+  cpState.tasks[key] = { checked: cb.checked, date: taskDate };
   const label = document.querySelector(`label[for="task-${key}"]`);
   if (label) {
     label.style.textDecoration = cb.checked ? 'line-through' : 'none';
     label.style.color = cb.checked ? 'var(--muted)' : '';
+    let taskDateSpan = label.querySelector('.task-date-stamp');
+    if (cb.checked && taskDate) {
+      if (!taskDateSpan) {
+        taskDateSpan = document.createElement('span');
+        taskDateSpan.className = 'task-date-stamp';
+        taskDateSpan.style.cssText = 'font-family:var(--font-mono);font-size:0.62rem;color:var(--dim);margin-left:8px;text-decoration:none;display:inline-block;';
+        label.appendChild(taskDateSpan);
+      }
+      taskDateSpan.textContent = '✓ ' + taskDate;
+    } else if (taskDateSpan) {
+      taskDateSpan.remove();
+    }
   }
   updateDashboard();
 }
@@ -12296,7 +12725,7 @@ function renderDomainSections(domain, sections, sectionKeys) {
       row.innerHTML = `
         <input type="checkbox" id="v-${key}" ${checked ? 'checked' : ''} onchange="toggleVideo('${key}','${domain.id}',this)">
         <div class="video-num">#${vi+1}</div>
-        <label class="video-label" for="v-${key}">${title}${duration ? `<span style="font-family:var(--font-mono);font-size:0.65rem;color:var(--muted);margin-left:6px;">${duration}</span>` : ''}${url ? ` <a href="${url}" target="_blank" onclick="event.stopPropagation();" style="color:var(--accent);font-size:0.72rem;text-decoration:none;margin-left:6px;font-family:var(--font-mono);">▶ Watch</a>` : ''}</label>
+        <label class="video-label" for="v-${key}">${title}${duration ? `<span style="font-family:var(--font-mono);font-size:0.65rem;color:var(--muted);margin-left:6px;">${duration}</span>` : ''}${url ? ` <a href="${url}" target="_blank" onclick="event.stopPropagation();" style="color:var(--accent);font-size:0.72rem;text-decoration:none;margin-left:6px;font-family:var(--font-mono);">▶ Watch</a>` : ''}${checked && prState.videos[key]?.date ? `<span style="font-family:var(--font-mono);font-size:0.62rem;color:var(--dim);margin-left:10px;">✓ ${prState.videos[key].date}</span>` : ''}</label>
       `;
       block.appendChild(row);
     });
@@ -12327,8 +12756,26 @@ function renderDomainSections(domain, sections, sectionKeys) {
 }
 
 function toggleVideo(key, domainId, cb) {
-  cpState.videos[key] = { checked: cb.checked };
+  const videoDate = cb.checked ? new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : '';
+  cpState.videos[key] = { checked: cb.checked, date: videoDate };
+  if (cb.checked) recordActivityToday();
   document.getElementById('vr-' + key).classList.toggle('checked', cb.checked);
+  // Update date span in DOM directly — renderPhase2 is not called on every toggle
+  const label = document.querySelector(`label[for="v-${key}"]`);
+  if (label) {
+    let dateSpan = label.querySelector('.video-date-stamp');
+    if (cb.checked && videoDate) {
+      if (!dateSpan) {
+        dateSpan = document.createElement('span');
+        dateSpan.className = 'video-date-stamp';
+        dateSpan.style.cssText = 'font-family:var(--font-mono);font-size:0.62rem;color:var(--dim);margin-left:10px;';
+        label.appendChild(dateSpan);
+      }
+      dateSpan.textContent = '✓ ' + videoDate;
+    } else if (dateSpan) {
+      dateSpan.remove();
+    }
+  }
   updateDomainProgress(domainId);
   updateDashboard();
 }
@@ -12716,14 +13163,40 @@ function renderTodayCard() {
   }
 
   card.style.display = 'block';
+
+  // Calculate completion for today's tasks
+  const totalTasks = todayDayData.tasks.length;
+  const doneTasks = todayDayData.tasks.filter((_, ti) => {
+    const tk = `w${todayWeek.num}-${todayName}-t${ti}`;
+    return cpState.tasks?.[tk]?.checked;
+  }).length;
+  const pct = totalTasks ? Math.round(doneTasks / totalTasks * 100) : 0;
+  const allDone = doneTasks === totalTasks;
+
   tasksEl.innerHTML = `
-    <div style="font-family:var(--font-mono);font-size:0.72rem;color:var(--muted);margin-bottom:10px;text-transform:uppercase;letter-spacing:0.08em;">${todayWeek.label} · ${todayName} · ${fmtDate(t)} · ${todayWeek.theme}</div>
-    ${todayDayData.tasks.map(task => `
-      <div style="display:flex;gap:10px;align-items:baseline;padding:5px 0;border-bottom:1px solid var(--border);">
-        <span style="color:var(--gold-dim);flex-shrink:0;">—</span>
-        <span style="font-size:0.9rem;color:var(--text);line-height:1.5;">${task}</span>
+    <div style="font-family:var(--font-mono);font-size:0.72rem;color:var(--muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.08em;">${todayWeek.label} · ${todayName} · ${fmtDate(t)} · ${(()=>{
+      const CLINKS={'Course 1':'https://www.coursera.org/learn/foundations-of-cybersecurity/home/module/1','Course 2':'https://www.coursera.org/learn/manage-security-risks/paidmedia?specialization=google-cybersecurity','Course 3':'https://www.coursera.org/learn/networks-and-network-security/paidmedia?specialization=google-cybersecurity','Course 5':'https://www.coursera.org/learn/assets-threats-and-vulnerabilities/paidmedia?specialization=google-cybersecurity','Course 6':'https://www.coursera.org/learn/detection-and-response/paidmedia?specialization=google-cybersecurity'};
+      const key=Object.keys(CLINKS).find(k=>todayWeek.theme.includes(k));
+      return key?todayWeek.theme.replace(key,'<a href="'+CLINKS[key]+'" target="_blank" style="color:var(--accent);text-decoration:none;">'+key+'</a>'):todayWeek.theme;
+    })()}</div>
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+      <div style="flex:1;height:6px;background:var(--border);border-radius:3px;overflow:hidden;">
+        <div style="height:100%;width:${pct}%;background:${allDone ? 'var(--green)' : 'var(--gold)'};border-radius:3px;transition:width .3s;"></div>
       </div>
-    `).join('')}
+      <span style="font-family:var(--font-mono);font-size:0.7rem;color:${allDone ? 'var(--green)' : 'var(--gold)'};font-weight:600;white-space:nowrap;">${doneTasks}/${totalTasks}${allDone ? ' ✓' : ''}</span>
+    </div>
+    ${todayDayData.tasks.map((task, ti) => {
+      const tk = 'w' + todayWeek.num + '-' + todayName + '-t' + ti;
+      const done = cpState.tasks?.[tk]?.checked;
+      const bullet = done ? '✓' : '—';
+      const col = done ? 'var(--green)' : 'var(--gold-dim)';
+      const textCol = done ? 'var(--muted)' : 'var(--text)';
+      const strike = done ? 'line-through' : 'none';
+      return '<div style="display:flex;gap:10px;align-items:baseline;padding:5px 0;border-bottom:1px solid var(--border);">'
+        + '<span style="color:' + col + ';flex-shrink:0;">' + bullet + '</span>'
+        + '<span style="font-size:0.9rem;color:' + textCol + ';line-height:1.5;text-decoration:' + strike + ';">' + task + '</span>' + (done && cpState.tasks?.[tk]?.date ? '<span style="font-family:var(--font-mono);font-size:0.62rem;color:var(--dim);margin-left:8px;">✓ ' + cpState.tasks[tk].date + '</span>' : '')
+        + '</div>';
+    }).join('')}
   `;
 }
 
@@ -12792,6 +13265,15 @@ function updateDashboard() {
   const streak = computeStreak();
   const streakEl = document.getElementById('cp-stat-streak');
   if (streakEl) streakEl.textContent = streak > 0 ? '🔥 ' + streak : '—';
+
+  // Countdown to exam
+  const EXAM_TARGET = new Date(2026, 9, 5); // Oct 5, 2026
+  const daysLeft = Math.ceil((EXAM_TARGET - today0()) / 86400000);
+  const cdEl = document.getElementById('cp-stat-countdown');
+  if (cdEl) {
+    cdEl.textContent = daysLeft > 0 ? daysLeft : daysLeft === 0 ? '📅' : '✓';
+    cdEl.style.color = daysLeft <= 30 ? 'var(--crimson-light)' : daysLeft <= 60 ? 'var(--gold)' : '';
+  }
 
   // Current week deadline stat
   const cwEl = document.getElementById('cp-stat-current-week');
@@ -12921,18 +13403,27 @@ function highlightCurrentWeek() {
 // ═══════════════════════════════════════════════════════ STREAK
 
 function computeStreak() {
-  // Collect all activity dates from anki sessions + video checks
   const dates = new Set();
-  (cpState.anki || []).forEach(s => { if (s.date) dates.add(s.date.split(',')[0].trim()); });
-  // Check video activity dates — use today's date if any video checked
-  // (we don't store per-video dates, so we use anki as the primary signal)
+  const fmtD = d => { const x = new Date(d); x.setHours(0,0,0,0); return x.toDateString(); };
+  // Anki sessions
+  (cpState.anki || []).forEach(s => { if (s.date) dates.add(fmtD(new Date(s.date.split(',')[0].trim()))); });
+  // Video checks — record today if any video was checked today
+  const todayStr = fmtD(new Date());
+  if (Object.values(cpState.videos || {}).some(v => v?.checked)) {
+    // We don't store per-video dates so add today if any video is checked
+    // Use activityDates store for precise tracking
+    if (cpState.activityDates) {
+      cpState.activityDates.forEach(d => dates.add(fmtD(new Date(d))));
+    }
+  }
+  // Task completions
+  if (cpState.activityDates) {
+    cpState.activityDates.forEach(d => dates.add(fmtD(new Date(d))));
+  }
   if (dates.size === 0) return 0;
-  // Sort dates descending
   const sorted = Array.from(dates).map(d => new Date(d)).sort((a, b) => b - a);
-  const today = new Date();
-  today.setHours(0,0,0,0);
+  const today = new Date(); today.setHours(0,0,0,0);
   const yesterday = new Date(today); yesterday.setDate(today.getDate()-1);
-  // Streak only counts if last activity was today or yesterday
   const last = new Date(sorted[0]); last.setHours(0,0,0,0);
   if (last < yesterday) return 0;
   let streak = 1;
@@ -12944,6 +13435,16 @@ function computeStreak() {
     else break;
   }
   return streak;
+}
+
+function recordActivityToday() {
+  if (!cpState.activityDates) cpState.activityDates = [];
+  const today = new Date().toDateString();
+  if (!cpState.activityDates.includes(today)) {
+    cpState.activityDates.push(today);
+    // Keep last 365 days only
+    if (cpState.activityDates.length > 365) cpState.activityDates.shift();
+  }
 }
 
 // ═══════════════════════════════════════════════════════ EXAM NOTES
@@ -13116,7 +13617,9 @@ function renderMonthView(chrome, dayMap, t) {
 
       const theme = entry.week.theme.replace(/^(Messer — |Google Cert — |⚠ CHECKPOINT — |Gauntlet — )/, '');
       const isSatEntry = entry.dayObj.day === 'Sat';
-      const chipCls = entry.status === 'overdue' ? 'chip-overdue' : isSatEntry ? 'chip-sat' : isToday ? 'chip-today' : 'chip-study';
+      const isGoogleCert = entry.week.theme && entry.week.theme.includes('Google Cert');
+      const isMesser = entry.week.theme && (entry.week.theme.includes('Messer') || entry.week.theme.includes('CHECKPOINT') || entry.week.theme.includes('Gauntlet'));
+      const chipCls = entry.status === 'overdue' ? 'chip-overdue' : isSatEntry ? 'chip-sat' : isToday ? 'chip-today' : isGoogleCert ? 'chip-cert' : isMesser ? 'chip-messer' : 'chip-study';
       chips.push({ cls: chipCls, text: `W${entry.week.num} · ${theme}` });
 
       // Show first 2 tasks abbreviated
@@ -13198,7 +13701,7 @@ function renderAgendaPanel(agenda, dayMap, selectedKey, t) {
   item.innerHTML = `
     <div class="cal-agenda-dot" style="background:${statusColor}"></div>
     <div style="flex:1;">
-      <div class="cal-agenda-title">${entry.week.label} · ${entry.week.theme}</div>
+      <div class="cal-agenda-title">${entry.week.label} · ${(()=>{const CL={'Course 1':'https://www.coursera.org/learn/foundations-of-cybersecurity/home/module/1','Course 2':'https://www.coursera.org/learn/manage-security-risks/paidmedia?specialization=google-cybersecurity','Course 3':'https://www.coursera.org/learn/networks-and-network-security/paidmedia?specialization=google-cybersecurity','Course 5':'https://www.coursera.org/learn/assets-threats-and-vulnerabilities/paidmedia?specialization=google-cybersecurity','Course 6':'https://www.coursera.org/learn/detection-and-response/paidmedia?specialization=google-cybersecurity'};const k=Object.keys(CL).find(x=>entry.week.theme.includes(x));return k?entry.week.theme.replace(k,'<a href="'+CL[k]+'" target="_blank" onclick="event.stopPropagation()" style="color:var(--accent);text-decoration:none;">'+k+'</a>'):entry.week.theme;})()}</div>
       <div class="cal-agenda-sub">${statusLabel} · ${entry.dayObj.day}</div>
       <ul class="cal-agenda-tasks">
         ${entry.dayObj.tasks.map(task => `<li>${task}</li>`).join('')}
@@ -13206,6 +13709,7 @@ function renderAgendaPanel(agenda, dayMap, selectedKey, t) {
       ${entry.week.note && (entry.dayObj.day === 'Fri' || entry.dayObj.day === 'Sat') ? `
         <div style="margin-top:8px;font-size:0.8rem;color:var(--muted);font-style:italic;border-top:1px solid var(--border);padding-top:8px;">${entry.week.note}</div>
       ` : ''}
+      ${entry.week.courseUrl ? `<div style="margin-top:8px;"><a href="${entry.week.courseUrl}" target="_blank" style="font-family:var(--font-mono);font-size:0.72rem;color:var(--accent);text-decoration:none;">↗ Open Course on Coursera</a></div>` : ''}
     </div>
   `;
   agenda.appendChild(item);
@@ -13248,8 +13752,9 @@ function renderAgendaView(chrome, dayMap, t) {
     }
 
     if (entry) {
-      const statusColor = entry.status==='overdue'?'var(--crimson-light)':entry.isExam?'var(--green)':entry.isCheckpoint?'var(--gold)':'var(--slate-light)';
-      content.innerHTML += `<div style="font-family:var(--font-head);font-size:0.9rem;font-style:italic;color:var(--text);margin-bottom:4px;">${entry.week.label} · ${entry.week.theme}</div>`;
+      const isCertWeek = entry.week.theme && entry.week.theme.includes('Google Cert');
+      const statusColor = entry.status==='overdue'?'var(--crimson-light)':entry.isExam?'var(--green)':entry.isCheckpoint?'var(--gold)':isCertWeek?'var(--green)':'var(--slate-light)';
+      content.innerHTML += `<div style="font-family:var(--font-head);font-size:0.9rem;font-style:italic;color:var(--text);margin-bottom:4px;">${entry.week.label} · ${(()=>{const CL={'Course 1':'https://www.coursera.org/learn/foundations-of-cybersecurity/home/module/1','Course 2':'https://www.coursera.org/learn/manage-security-risks/paidmedia?specialization=google-cybersecurity','Course 3':'https://www.coursera.org/learn/networks-and-network-security/paidmedia?specialization=google-cybersecurity','Course 5':'https://www.coursera.org/learn/assets-threats-and-vulnerabilities/paidmedia?specialization=google-cybersecurity','Course 6':'https://www.coursera.org/learn/detection-and-response/paidmedia?specialization=google-cybersecurity'};const k=Object.keys(CL).find(x=>entry.week.theme.includes(x));return k?entry.week.theme.replace(k,'<a href="'+CL[k]+'" target="_blank" onclick="event.stopPropagation()" style="color:var(--accent);text-decoration:none;">'+k+'</a>'):entry.week.theme;})()}</div>`;
       content.innerHTML += entry.dayObj.tasks.map(task => `
         <div style="font-size:0.82rem;color:${entry.status==='overdue'?'var(--crimson-light)':'var(--text2)'};margin-bottom:2px;line-height:1.5;">— ${task}</div>
       `).join('');
@@ -13268,7 +13773,7 @@ function renderAgendaView(chrome, dayMap, t) {
 
 function calSelectDay(key, date) {
   calState.selectedKey = key;
-  const panel = document.getElementById('cp-cal-agenda-panel');
+  const panel = document.getElementById('cal-agenda-panel');
   if (panel) {
     const dayMap = buildDayMap();
     renderAgendaPanel(panel, dayMap, key, today0());
@@ -13355,7 +13860,27 @@ function renderCatchupPanel() {
   const overdueWeeks = WEEKS.filter(w => weekStatus(w.num) === 'overdue');
 
   if (overdueWeeks.length === 0) {
-    el.style.display = 'none';
+    // Show proactive protocol reminder during first 2 weeks
+    const currentWeek = WEEKS.find(w => weekStatus(w.num) === 'current');
+    if (currentWeek && currentWeek.num <= 2) {
+      el.style.display = 'block';
+      el.style.borderColor = 'var(--border)';
+      el.innerHTML = `
+        <div style="font-family:var(--font-mono);font-size:0.65rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:8px;">📋 Comeback Protocol — Know Before You Need It</div>
+        <div style="font-size:0.82rem;color:var(--text2);line-height:1.6;">
+          Life happens. If you miss sessions: <strong style="color:var(--text);">do not restart.</strong>
+          Open the Schedule tab, find the last incomplete session, and resume from there.
+          All deadlines stay fixed — the path forward is always the next unchecked task.
+        </div>
+        <div style="display:flex;gap:20px;margin-top:10px;flex-wrap:wrap;">
+          <div style="font-size:0.78rem;color:var(--text2);"><span style="color:var(--green);font-weight:700;">1–3 days missed</span> — resume same week</div>
+          <div style="font-size:0.78rem;color:var(--text2);"><span style="color:var(--gold);font-weight:700;">4–7 days missed</span> — compress the week, keep going</div>
+          <div style="font-size:0.78rem;color:var(--text2);"><span style="color:var(--crimson-light);font-weight:700;">7+ days missed</span> — resume from last checkpoint, skip nothing</div>
+        </div>
+      `;
+    } else {
+      el.style.display = 'none';
+    }
     return;
   }
 
@@ -13440,7 +13965,11 @@ function renderSchedule() {
             <span style="font-family:var(--font-mono);font-size:0.68rem;color:var(--muted);">${dateRange}</span>
             ${badge}
           </div>
-          <div style="font-family:var(--font-head);font-size:0.92rem;font-style:italic;color:var(--text2);">${week.theme}</div>
+          <div style="font-family:var(--font-head);font-size:0.92rem;font-style:italic;color:var(--text2);">${(()=>{
+            const CLINKS={'Course 1':'https://www.coursera.org/learn/foundations-of-cybersecurity/home/module/1','Course 2':'https://www.coursera.org/learn/manage-security-risks/paidmedia?specialization=google-cybersecurity','Course 3':'https://www.coursera.org/learn/networks-and-network-security/paidmedia?specialization=google-cybersecurity','Course 5':'https://www.coursera.org/learn/assets-threats-and-vulnerabilities/paidmedia?specialization=google-cybersecurity','Course 6':'https://www.coursera.org/learn/detection-and-response/paidmedia?specialization=google-cybersecurity'};
+            const key=Object.keys(CLINKS).find(k=>week.theme.includes(k));
+            return key?week.theme.replace(key,`<a href="${CLINKS[key]}" target="_blank" onclick="event.stopPropagation()" style="color:var(--accent);text-decoration:none;">${key}</a>`):week.theme;
+          })()}</div>
         </div>
         <div style="font-family:var(--font-mono);font-size:0.72rem;color:var(--dim);flex-shrink:0;" id="wk-chevron-${week.num}">▼</div>
       </div>
@@ -13483,7 +14012,7 @@ function renderSchedule() {
             const tChecked = cpState.tasks?.[tk]?.checked || false;
             return `<div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:5px;">
               <input type="checkbox" id="task-${tk}" ${tChecked ? 'checked' : ''} onchange="toggleTask('${tk}',this)" style="margin-top:3px;flex-shrink:0;accent-color:var(--gold);">
-              <label for="task-${tk}" style="font-size:0.86rem;line-height:1.5;color:${tChecked ? 'var(--muted)' : effectiveStatus === 'overdue' ? 'var(--text2)' : 'var(--text)'};text-decoration:${tChecked ? 'line-through' : 'none'};cursor:pointer;">${t}</label>
+              <label for="task-${tk}" style="font-size:0.86rem;line-height:1.5;color:${tChecked ? 'var(--muted)' : effectiveStatus === 'overdue' ? 'var(--text2)' : 'var(--text)'};text-decoration:${tChecked ? 'line-through' : 'none'};cursor:pointer;">${t}${tChecked && cpState.tasks?.[tk]?.date ? `<span style="font-family:var(--font-mono);font-size:0.62rem;color:var(--dim);margin-left:8px;text-decoration:none;display:inline-block;">✓ ${cpState.tasks[tk].date}</span>` : ''}</label>
             </div>`;
           }).join('')}
         </div>
@@ -13492,6 +14021,14 @@ function renderSchedule() {
     });
 
     // Note
+    // "Open Course" link if this week has a courseUrl
+    if (week.courseUrl) {
+      const linkEl = document.createElement('div');
+      linkEl.style.cssText = 'padding:6px 18px 2px;';
+      linkEl.innerHTML = `<a href="${week.courseUrl}" target="_blank" style="font-family:var(--font-mono);font-size:0.72rem;color:var(--accent);text-decoration:none;letter-spacing:0.06em;">↗ Open Course on Coursera</a>`;
+      body.appendChild(linkEl);
+    }
+
     if (week.note) {
       const noteEl = document.createElement('div');
       noteEl.style.cssText = `padding:12px 18px;background:${bg};font-size:0.84rem;color:var(--muted);line-height:1.6;font-style:italic;border-top:1px solid var(--border);`;
@@ -13719,12 +14256,113 @@ function PR_renderTerms(list) {
 }
 
 function PR_filterTerms(query) {
+  // Preserve query if called without argument (e.g. from updateDashboard)
+  if (query !== undefined) _prTermsQuery = query;
   const domain = document.getElementById('pr-terms-domain')?.value || '';
-  const q = (query || '').toLowerCase().trim();
+  const q = (_prTermsQuery || '').toLowerCase().trim();
+  // Restore input value in case it was cleared by re-render
+  const searchEl = document.getElementById('pr-terms-search');
+  if (searchEl && searchEl.value !== _prTermsQuery) searchEl.value = _prTermsQuery;
   let filtered = KEY_TERMS;
   if (domain && domain !== 'all') filtered = filtered.filter(t => t.domain === domain);
   if (q) filtered = filtered.filter(t => t.a.toLowerCase().includes(q) || t.d.toLowerCase().includes(q));
   PR_renderTerms(filtered);
+}
+
+
+// ════════════════════════════════════════════════════════════════════
+// GLOBAL SEARCH
+// ════════════════════════════════════════════════════════════════════
+function hubSearch(query) {
+  const el = document.getElementById('hub-search-results');
+  if (!el) return;
+  const q = (query || '').toLowerCase().trim();
+  if (!q || q.length < 2) { el.innerHTML = ''; el.style.display = 'none'; return; }
+  el.style.display = 'block';
+
+  const results = [];
+
+  // Search KEY_TERMS
+  KEY_TERMS.forEach(t => {
+    if (t.a.toLowerCase().includes(q) || t.d.toLowerCase().includes(q)) {
+      results.push({ type: 'term', label: t.a, detail: t.d, action: "switchHub('premium');switchTabPR('anki');PR_filterTerms('" + t.a + "')" });
+    }
+  });
+
+  // Search MESSER_VIDEOS
+  Object.entries(MESSER_VIDEOS).forEach(([domId, sections]) => {
+    Object.entries(sections).forEach(([sectionKey, vids]) => {
+      vids.forEach(vid => {
+        const title = typeof vid === 'object' ? vid.title : vid;
+        const url   = typeof vid === 'object' ? vid.url   : null;
+        if (title.toLowerCase().includes(q)) {
+          results.push({ type: 'video', label: title, detail: sectionKey, url, action: "switchHub('portal');switchTabCP('phase2')" });
+        }
+      });
+    });
+  });
+
+  // Search DOMAINS objectives
+  DOMAINS.forEach(domain => {
+    domain.sections.forEach(section => {
+      (section.objectives || []).forEach(obj => {
+        if (obj.toLowerCase().includes(q) || section.name.toLowerCase().includes(q)) {
+          results.push({ type: 'obj', label: section.name, detail: obj, action: "switchHub('portal');switchTabCP('phase2')" });
+        }
+      });
+    });
+  });
+
+  // Search section notes
+  Object.entries(cpState.sectionNotes || {}).forEach(([key, note]) => {
+    if (note && note.toLowerCase().includes(q)) {
+      results.push({ type: 'note', label: 'Section Note', detail: note.substring(0, 80) + (note.length > 80 ? '…' : ''), action: "switchHub('portal');switchTabCP('phase2')" });
+    }
+  });
+
+  if (!results.length) {
+    el.innerHTML = '<div style="padding:12px 14px;font-size:0.8rem;color:var(--muted);font-family:var(--font-mono);">No results for "' + query + '"</div>';
+    return;
+  }
+
+  const typeIcon = { term:'🔤', video:'▶', obj:'🎯', note:'📝' };
+  const typeColor = { term:'var(--d3)', video:'var(--gold)', obj:'var(--d1)', note:'var(--d5)' };
+
+  el.innerHTML = results.slice(0, 12).map(r => `
+    <div onclick="${r.action}" style="padding:9px 14px;cursor:pointer;border-bottom:1px solid var(--border2);display:flex;gap:10px;align-items:flex-start;" onmouseover="this.style.background='var(--surface2)'" onmouseout="this.style.background=''">
+      <span style="flex-shrink:0;font-size:12px;">${typeIcon[r.type]}</span>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:0.8rem;font-weight:600;color:${typeColor[r.type]};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${r.label}</div>
+        <div style="font-size:0.74rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${r.detail}</div>
+      </div>
+      ${r.url ? `<a href="${r.url}" target="_blank" onclick="event.stopPropagation()" style="flex-shrink:0;font-family:var(--font-mono);font-size:0.68rem;color:var(--gold);text-decoration:none;" >↗</a>` : ''}
+    </div>
+  `).join('') + (results.length > 12 ? `<div style="padding:8px 14px;font-size:0.72rem;color:var(--muted);font-family:var(--font-mono);">+${results.length - 12} more — refine your search</div>` : '');
+}
+
+// ════════════════════════════════════════════════════════════════════
+// NOTES SUMMARY on Dashboard
+// ════════════════════════════════════════════════════════════════════
+function renderNotesSummary() {
+  const card = document.getElementById('cp-notes-summary');
+  const list = document.getElementById('cp-notes-list');
+  if (!card || !list) return;
+
+  const notes = Object.entries(cpState.sectionNotes || {}).filter(([, v]) => v && v.trim());
+  if (!notes.length) { card.style.display = 'none'; return; }
+
+  card.style.display = 'block';
+  list.innerHTML = notes.map(([key, note]) => {
+    // key format: domainId-sectionIdx e.g. d1-0
+    const [domId, si] = key.split('-');
+    const domain = DOMAINS.find(d => d.id === domId);
+    const section = domain?.sections?.[parseInt(si)];
+    const label = section ? section.name : key;
+    return `<div style="padding:8px 12px;background:var(--surface2);border-radius:var(--radius);border-left:3px solid var(--gold);">
+      <div style="font-family:var(--font-mono);font-size:0.65rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px;">${label}</div>
+      <div style="font-size:0.82rem;color:var(--text2);line-height:1.5;">${note.substring(0, 120)}${note.length > 120 ? '…' : ''}</div>
+    </div>`;
+  }).join('');
 }
 
 document.addEventListener('DOMContentLoaded', initCombined);
@@ -14057,7 +14695,7 @@ function PR_renderDomainSections(domain, sections, sectionKeys) {
       row.innerHTML = `
         <input type="checkbox" id="pr-v-${key}" ${checked ? 'checked' : ''} onchange="PR_toggleVideo('${key}','${domain.id}',this)">
         <div class="video-num">#${vi+1}</div>
-        <label class="video-label" for="pr-v-${key}">${title}${duration ? `<span style="font-family:var(--font-mono);font-size:0.65rem;color:var(--muted);margin-left:6px;">${duration}</span>` : ''}${url ? ` <a href="${url}" target="_blank" onclick="event.stopPropagation();" style="color:var(--accent);font-size:0.72rem;text-decoration:none;margin-left:6px;font-family:var(--font-mono);">▶ Watch</a>` : ''}</label>
+        <label class="video-label" for="pr-v-${key}">${title}${duration ? `<span style="font-family:var(--font-mono);font-size:0.65rem;color:var(--muted);margin-left:6px;">${duration}</span>` : ''}${url ? ` <a href="${url}" target="_blank" onclick="event.stopPropagation();" style="color:var(--accent);font-size:0.72rem;text-decoration:none;margin-left:6px;font-family:var(--font-mono);">▶ Watch</a>` : ''}${checked && prState.videos[key]?.date ? `<span style="font-family:var(--font-mono);font-size:0.62rem;color:var(--dim);margin-left:10px;">✓ ${prState.videos[key].date}</span>` : ''}</label>
       `;
       block.appendChild(row);
     });
@@ -14088,7 +14726,24 @@ function PR_renderDomainSections(domain, sections, sectionKeys) {
 }
 
 function PR_toggleVideo(key, domainId, cb) {
-  prState.videos[key] = { checked: cb.checked };
+  const prVideoDate = cb.checked ? new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : '';
+  prState.videos[key] = { checked: cb.checked, date: prVideoDate };
+  // Update date span in DOM directly
+  const prLabel = document.querySelector(`label[for="pr-v-${key}"]`);
+  if (prLabel) {
+    let prDateSpan = prLabel.querySelector('.video-date-stamp');
+    if (cb.checked && prVideoDate) {
+      if (!prDateSpan) {
+        prDateSpan = document.createElement('span');
+        prDateSpan.className = 'video-date-stamp';
+        prDateSpan.style.cssText = 'font-family:var(--font-mono);font-size:0.62rem;color:var(--dim);margin-left:10px;';
+        prLabel.appendChild(prDateSpan);
+      }
+      prDateSpan.textContent = '✓ ' + prVideoDate;
+    } else if (prDateSpan) {
+      prDateSpan.remove();
+    }
+  }
   PR_updateDomainProgress(domainId);
   PR_updateDashboard();
 }
@@ -14513,6 +15168,15 @@ function PR_updateDashboard() {
   const streakEl = document.getElementById('pr-stat-streak');
   if (streakEl) streakEl.textContent = streak > 0 ? '🔥 ' + streak : '—';
 
+  // Countdown to exam
+  const EXAM_TARGET = new Date(2026, 9, 5); // Oct 5, 2026
+  const daysLeft = Math.ceil((EXAM_TARGET - today0()) / 86400000);
+  const cdEl = document.getElementById('cp-stat-countdown');
+  if (cdEl) {
+    cdEl.textContent = daysLeft > 0 ? daysLeft : daysLeft === 0 ? '📅' : '✓';
+    cdEl.style.color = daysLeft <= 30 ? 'var(--crimson-light)' : daysLeft <= 60 ? 'var(--gold)' : '';
+  }
+
   // Current week deadline stat
   const cwEl = document.getElementById('pr-stat-current-week');
   const cwLabelEl = document.getElementById('pr-stat-deadline-label');
@@ -14735,7 +15399,27 @@ function PR_renderCatchupPanel() {
   const overdueWeeks = WEEKS.filter(w => PR_weekStatus(w.num) === 'overdue');
 
   if (overdueWeeks.length === 0) {
-    el.style.display = 'none';
+    // Show proactive protocol reminder during first 2 weeks
+    const currentWeek = WEEKS.find(w => weekStatus(w.num) === 'current');
+    if (currentWeek && currentWeek.num <= 2) {
+      el.style.display = 'block';
+      el.style.borderColor = 'var(--border)';
+      el.innerHTML = `
+        <div style="font-family:var(--font-mono);font-size:0.65rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:8px;">📋 Comeback Protocol — Know Before You Need It</div>
+        <div style="font-size:0.82rem;color:var(--text2);line-height:1.6;">
+          Life happens. If you miss sessions: <strong style="color:var(--text);">do not restart.</strong>
+          Open the Schedule tab, find the last incomplete session, and resume from there.
+          All deadlines stay fixed — the path forward is always the next unchecked task.
+        </div>
+        <div style="display:flex;gap:20px;margin-top:10px;flex-wrap:wrap;">
+          <div style="font-size:0.78rem;color:var(--text2);"><span style="color:var(--green);font-weight:700;">1–3 days missed</span> — resume same week</div>
+          <div style="font-size:0.78rem;color:var(--text2);"><span style="color:var(--gold);font-weight:700;">4–7 days missed</span> — compress the week, keep going</div>
+          <div style="font-size:0.78rem;color:var(--text2);"><span style="color:var(--crimson-light);font-weight:700;">7+ days missed</span> — resume from last checkpoint, skip nothing</div>
+        </div>
+      `;
+    } else {
+      el.style.display = 'none';
+    }
     return;
   }
 
@@ -14820,7 +15504,11 @@ function PR_renderSchedule() {
             <span style="font-family:var(--font-mono);font-size:0.68rem;color:var(--muted);">${dateRange}</span>
             ${badge}
           </div>
-          <div style="font-family:var(--font-head);font-size:0.92rem;font-style:italic;color:var(--text2);">${week.theme}</div>
+          <div style="font-family:var(--font-head);font-size:0.92rem;font-style:italic;color:var(--text2);">${(()=>{
+            const CLINKS={'Course 1':'https://www.coursera.org/learn/foundations-of-cybersecurity/home/module/1','Course 2':'https://www.coursera.org/learn/manage-security-risks/paidmedia?specialization=google-cybersecurity','Course 3':'https://www.coursera.org/learn/networks-and-network-security/paidmedia?specialization=google-cybersecurity','Course 5':'https://www.coursera.org/learn/assets-threats-and-vulnerabilities/paidmedia?specialization=google-cybersecurity','Course 6':'https://www.coursera.org/learn/detection-and-response/paidmedia?specialization=google-cybersecurity'};
+            const key=Object.keys(CLINKS).find(k=>week.theme.includes(k));
+            return key?week.theme.replace(key,`<a href="${CLINKS[key]}" target="_blank" onclick="event.stopPropagation()" style="color:var(--accent);text-decoration:none;">${key}</a>`):week.theme;
+          })()}</div>
         </div>
         <div style="font-family:var(--font-mono);font-size:0.72rem;color:var(--dim);flex-shrink:0;" id="wk-chevron-${week.num}">▼</div>
       </div>
@@ -14863,7 +15551,7 @@ function PR_renderSchedule() {
             const tChecked = cpState.tasks?.[tk]?.checked || false;
             return `<div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:5px;">
               <input type="checkbox" id="task-${tk}" ${tChecked ? 'checked' : ''} onchange="toggleTask('${tk}',this)" style="margin-top:3px;flex-shrink:0;accent-color:var(--gold);">
-              <label for="task-${tk}" style="font-size:0.86rem;line-height:1.5;color:${tChecked ? 'var(--muted)' : effectiveStatus === 'overdue' ? 'var(--text2)' : 'var(--text)'};text-decoration:${tChecked ? 'line-through' : 'none'};cursor:pointer;">${t}</label>
+              <label for="task-${tk}" style="font-size:0.86rem;line-height:1.5;color:${tChecked ? 'var(--muted)' : effectiveStatus === 'overdue' ? 'var(--text2)' : 'var(--text)'};text-decoration:${tChecked ? 'line-through' : 'none'};cursor:pointer;">${t}${tChecked && cpState.tasks?.[tk]?.date ? `<span style="font-family:var(--font-mono);font-size:0.62rem;color:var(--dim);margin-left:8px;text-decoration:none;display:inline-block;">✓ ${cpState.tasks[tk].date}</span>` : ''}</label>
             </div>`;
           }).join('')}
         </div>
@@ -14872,6 +15560,14 @@ function PR_renderSchedule() {
     });
 
     // Note
+    // "Open Course" link if this week has a courseUrl
+    if (week.courseUrl) {
+      const linkEl = document.createElement('div');
+      linkEl.style.cssText = 'padding:6px 18px 2px;';
+      linkEl.innerHTML = `<a href="${week.courseUrl}" target="_blank" style="font-family:var(--font-mono);font-size:0.72rem;color:var(--accent);text-decoration:none;letter-spacing:0.06em;">↗ Open Course on Coursera</a>`;
+      body.appendChild(linkEl);
+    }
+
     if (week.note) {
       const noteEl = document.createElement('div');
       noteEl.style.cssText = `padding:12px 18px;background:${bg};font-size:0.84rem;color:var(--muted);line-height:1.6;font-style:italic;border-top:1px solid var(--border);`;
@@ -15274,12 +15970,113 @@ function PR_renderTerms(list) {
 }
 
 function PR_filterTerms(query) {
+  // Preserve query if called without argument (e.g. from updateDashboard)
+  if (query !== undefined) _prTermsQuery = query;
   const domain = document.getElementById('pr-terms-domain')?.value || '';
-  const q = (query || '').toLowerCase().trim();
+  const q = (_prTermsQuery || '').toLowerCase().trim();
+  // Restore input value in case it was cleared by re-render
+  const searchEl = document.getElementById('pr-terms-search');
+  if (searchEl && searchEl.value !== _prTermsQuery) searchEl.value = _prTermsQuery;
   let filtered = KEY_TERMS;
   if (domain && domain !== 'all') filtered = filtered.filter(t => t.domain === domain);
   if (q) filtered = filtered.filter(t => t.a.toLowerCase().includes(q) || t.d.toLowerCase().includes(q));
   PR_renderTerms(filtered);
+}
+
+
+// ════════════════════════════════════════════════════════════════════
+// GLOBAL SEARCH
+// ════════════════════════════════════════════════════════════════════
+function hubSearch(query) {
+  const el = document.getElementById('hub-search-results');
+  if (!el) return;
+  const q = (query || '').toLowerCase().trim();
+  if (!q || q.length < 2) { el.innerHTML = ''; el.style.display = 'none'; return; }
+  el.style.display = 'block';
+
+  const results = [];
+
+  // Search KEY_TERMS
+  KEY_TERMS.forEach(t => {
+    if (t.a.toLowerCase().includes(q) || t.d.toLowerCase().includes(q)) {
+      results.push({ type: 'term', label: t.a, detail: t.d, action: "switchHub('premium');switchTabPR('anki');PR_filterTerms('" + t.a + "')" });
+    }
+  });
+
+  // Search MESSER_VIDEOS
+  Object.entries(MESSER_VIDEOS).forEach(([domId, sections]) => {
+    Object.entries(sections).forEach(([sectionKey, vids]) => {
+      vids.forEach(vid => {
+        const title = typeof vid === 'object' ? vid.title : vid;
+        const url   = typeof vid === 'object' ? vid.url   : null;
+        if (title.toLowerCase().includes(q)) {
+          results.push({ type: 'video', label: title, detail: sectionKey, url, action: "switchHub('portal');switchTabCP('phase2')" });
+        }
+      });
+    });
+  });
+
+  // Search DOMAINS objectives
+  DOMAINS.forEach(domain => {
+    domain.sections.forEach(section => {
+      (section.objectives || []).forEach(obj => {
+        if (obj.toLowerCase().includes(q) || section.name.toLowerCase().includes(q)) {
+          results.push({ type: 'obj', label: section.name, detail: obj, action: "switchHub('portal');switchTabCP('phase2')" });
+        }
+      });
+    });
+  });
+
+  // Search section notes
+  Object.entries(cpState.sectionNotes || {}).forEach(([key, note]) => {
+    if (note && note.toLowerCase().includes(q)) {
+      results.push({ type: 'note', label: 'Section Note', detail: note.substring(0, 80) + (note.length > 80 ? '…' : ''), action: "switchHub('portal');switchTabCP('phase2')" });
+    }
+  });
+
+  if (!results.length) {
+    el.innerHTML = '<div style="padding:12px 14px;font-size:0.8rem;color:var(--muted);font-family:var(--font-mono);">No results for "' + query + '"</div>';
+    return;
+  }
+
+  const typeIcon = { term:'🔤', video:'▶', obj:'🎯', note:'📝' };
+  const typeColor = { term:'var(--d3)', video:'var(--gold)', obj:'var(--d1)', note:'var(--d5)' };
+
+  el.innerHTML = results.slice(0, 12).map(r => `
+    <div onclick="${r.action}" style="padding:9px 14px;cursor:pointer;border-bottom:1px solid var(--border2);display:flex;gap:10px;align-items:flex-start;" onmouseover="this.style.background='var(--surface2)'" onmouseout="this.style.background=''">
+      <span style="flex-shrink:0;font-size:12px;">${typeIcon[r.type]}</span>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:0.8rem;font-weight:600;color:${typeColor[r.type]};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${r.label}</div>
+        <div style="font-size:0.74rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${r.detail}</div>
+      </div>
+      ${r.url ? `<a href="${r.url}" target="_blank" onclick="event.stopPropagation()" style="flex-shrink:0;font-family:var(--font-mono);font-size:0.68rem;color:var(--gold);text-decoration:none;" >↗</a>` : ''}
+    </div>
+  `).join('') + (results.length > 12 ? `<div style="padding:8px 14px;font-size:0.72rem;color:var(--muted);font-family:var(--font-mono);">+${results.length - 12} more — refine your search</div>` : '');
+}
+
+// ════════════════════════════════════════════════════════════════════
+// NOTES SUMMARY on Dashboard
+// ════════════════════════════════════════════════════════════════════
+function renderNotesSummary() {
+  const card = document.getElementById('cp-notes-summary');
+  const list = document.getElementById('cp-notes-list');
+  if (!card || !list) return;
+
+  const notes = Object.entries(cpState.sectionNotes || {}).filter(([, v]) => v && v.trim());
+  if (!notes.length) { card.style.display = 'none'; return; }
+
+  card.style.display = 'block';
+  list.innerHTML = notes.map(([key, note]) => {
+    // key format: domainId-sectionIdx e.g. d1-0
+    const [domId, si] = key.split('-');
+    const domain = DOMAINS.find(d => d.id === domId);
+    const section = domain?.sections?.[parseInt(si)];
+    const label = section ? section.name : key;
+    return `<div style="padding:8px 12px;background:var(--surface2);border-radius:var(--radius);border-left:3px solid var(--gold);">
+      <div style="font-family:var(--font-mono);font-size:0.65rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px;">${label}</div>
+      <div style="font-size:0.82rem;color:var(--text2);line-height:1.5;">${note.substring(0, 120)}${note.length > 120 ? '…' : ''}</div>
+    </div>`;
+  }).join('');
 }
 
 document.addEventListener('DOMContentLoaded', initCombined);
