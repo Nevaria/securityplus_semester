@@ -49,6 +49,10 @@
   --d5b: #180c20;
 
   --radius: 4px;
+  --radius-card: 10px;
+  --radius-pill: 99px;
+  --card-border: none;
+  --card-shadow: 0 1px 3px rgba(0,0,0,0.3);
   --font-head: 'Source Serif 4', Georgia, serif;
   --font-body: 'Inter', system-ui, sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
@@ -56,33 +60,47 @@
 
 [data-theme="light"] {
   --bg: #f5f0e8;
-  --surface: #faf6ee;
+  --surface: #fdf9f3;
   --surface2: #f0ebe0;
   --surface3: #e8e0d0;
-  --border: #d8cfc0;
-  --border2: #c8bba8;
+  --border: #ddd4c0;
+  --border2: #c8b898;
   --text: #1a1510;
-  --text2: #4a4030;
+  --text2: #4a3e2e;
   --muted: #7a6a50;
   --dim: #b8a890;
-  --gold-bg: #fdf8ee;
-  --green-bg: #f0f8f0;
-  --slate-bg: #f0f4f8;
+  --gold-bg: #fdf5e4;
+  --green-bg: #eef7f0;
+  --slate-bg: #eef3f8;
   --d1b: #dceaf5;
   --d2b: #fce8e8;
-  --d3b: #e4f5e8;
-  --d4b: #fdf4da;
+  --d3b: #e2f5e6;
+  --d4b: #fdf2d0;
   --d5b: #f2e4fa;
-  --green: #2a7a42;
-  --green-light: #2a7a42;
-  --crimson-light: #b01e1e;
-  --slate: #3a6a90;
-  --slate-light: #3a6a90;
-  --gold: #8a5c10;
-  --gold-light: #8a5c10;
-  --gold-dim: #c8a060;
-  --yellow: #8a5c10;
-  --red: #b01e1e;
+  /* Richer, warmer gold — amber-brown not olive */
+  --gold: #9a6200;
+  --gold-light: #b87800;
+  --gold-dim: #d4a060;
+  --yellow: #9a6200;
+  /* Deeper, cleaner green */
+  --green: #1e6e3a;
+  --green-light: #1e6e3a;
+  /* Warmer slate/blue */
+  --slate: #2e6090;
+  --slate-light: #2e6090;
+  --accent: #2e6090;
+  /* Errors */
+  --crimson-light: #a81818;
+  --red: #a81818;
+  /* Domain colors — richer in light mode */
+  --d1: #2e6090;
+  --d2: #a81818;
+  --d3: #1e6e3a;
+  --d4: #9a6200;
+  --d5: #7040b0;
+  /* Light mode cards — use borders not shadows */
+  --card-border: 1px solid var(--border);
+  --card-shadow: none;
 }
 
 /* ── Cost pills ── */
@@ -90,7 +108,7 @@
 .cost-low  { background: var(--gold-bg); color: var(--gold); border: 1px solid var(--gold-dim); font-weight: 600; }
 .cost-med  { background: var(--d2b); color: var(--d2); border: 1px solid var(--d2); font-weight: 600; }
 .cost-high { background: var(--d2b); color: var(--d2); border: 1px solid var(--d2); font-weight: 600; }
-.phase-tag { background: var(--d1b); color: var(--d1); border: 1px solid var(--d1); font-weight: 600; }
+.phase-tag { background: var(--d1b); color: var(--d1); border: 1px solid var(--d1); border-radius: var(--radius-pill); font-weight: 600; padding: 1px 8px; }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -294,10 +312,11 @@ body {
 /* ══ CARDS ══ */
 .card {
   background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
+  border: var(--card-border, 1px solid var(--border));
+  border-radius: var(--radius-card);
   padding: 20px 22px;
   margin-bottom: 16px;
+  box-shadow: var(--card-shadow, none);
 }
 .card-title {
   font-family: var(--font-head);
@@ -311,16 +330,16 @@ body {
 /* ══ CALLOUTS ══ */
 .callout {
   display: flex;
-  gap: 12px;
+  gap: 10px;
   align-items: flex-start;
   border-radius: var(--radius);
-  padding: 14px 16px;
-  margin-bottom: 16px;
-  font-size: 0.88rem;
-  line-height: 1.6;
+  padding: 12px 14px;
+  margin-bottom: 12px;
+  font-size: 0.85rem;
+  line-height: 1.55;
 }
 .callout-icon { font-size: 1rem; flex-shrink: 0; margin-top: 1px; }
-.callout-blue  { border-left: 3px solid var(--slate); background: var(--slate-bg); color: var(--text2); }
+.callout-blue  { border-left: 2px solid var(--border2); background: transparent; color: var(--text2); padding: 10px 14px; }
 .callout-yellow{ border-left: 3px solid var(--gold); background: var(--gold-bg); color: var(--text2); }
 .callout-green { border-left: 3px solid var(--green); background: var(--green-bg); color: var(--text2); }
 .callout-red   { border-left: 3px solid var(--crimson-light); background: var(--d2b); color: var(--text2); }
@@ -337,7 +356,7 @@ body {
 .stat-box {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: var(--radius);
+  border-radius: 8px;
   padding: 16px 14px;
   text-align: center;
 }
@@ -433,7 +452,7 @@ body {
 .domain-card {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: var(--radius);
+  border-radius: var(--radius-card);
   margin-bottom: 10px;
   overflow: hidden;
 }
@@ -581,7 +600,7 @@ body {
 .score-input {
   background: var(--surface2);
   border: 1px solid var(--border);
-  border-radius: 2px;
+  border-radius: 4px;
   color: var(--text);
   font-family: var(--font-mono);
   font-size: 0.8rem;
@@ -642,7 +661,7 @@ body {
 .anki-form input, .anki-form select, .anki-form textarea {
   background: var(--surface2);
   border: 1px solid var(--border);
-  border-radius: 2px;
+  border-radius: 4px;
   color: var(--text);
   font-family: var(--font-body);
   font-size: 0.85rem;
@@ -671,7 +690,7 @@ body {
 .budget-input {
   background: var(--surface2);
   border: 1px solid var(--border);
-  border-radius: 2px;
+  border-radius: 4px;
   color: var(--text);
   font-family: var(--font-mono);
   font-size: 0.8rem;
@@ -716,7 +735,7 @@ body {
   font-style: italic;
 }
 .phase-meta { font-family: var(--font-mono); font-size: 0.72rem; color: var(--muted); }
-.phase-tag { font-family: var(--font-mono); font-size: 0.67rem; padding: 3px 8px; border-radius: 2px; text-transform: uppercase; letter-spacing: 0.06em; }
+.phase-tag { font-family: var(--font-mono); font-size: 0.67rem; padding: 3px 8px; border-radius: 99px; text-transform: uppercase; letter-spacing: 0.06em; }
 
 /* ══ TIMELINE ══ */
 .timeline { margin: 0; }
@@ -745,7 +764,7 @@ body {
 .week-card {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: var(--radius);
+  border-radius: var(--radius-card);
   margin-bottom: 8px;
   overflow: hidden;
 }
@@ -951,8 +970,8 @@ body {
 .cal-chip {
   font-size: 0.63rem;
   line-height: 1.3;
-  padding: 2px 5px;
-  border-radius: 2px;
+  padding: 2px 6px;
+  border-radius: 99px;
   margin-bottom: 2px;
   white-space: nowrap;
   overflow: hidden;
@@ -1864,7 +1883,7 @@ body {
 .score-card {
   background: var(--surface2);
   border: 1px solid var(--border);
-  border-radius: var(--radius);
+  border-radius: var(--radius-card);
   padding: 14px;
 }
 .score-domain-name {
@@ -2223,12 +2242,12 @@ body {
 }
 
 /* ── HUB NAV ── */
-.hub-nav{background:#0e0c0a;border-bottom:2px solid #c9a84c;display:flex;align-items:center;justify-content:space-between;padding:0 20px;position:sticky;top:0;z-index:200;height:44px;}
-.hub-nav-brand{font-family:var(--font-head,'Playfair Display',serif);font-size:.85rem;font-weight:700;font-style:italic;color:#c9a84c;white-space:nowrap;}
+.hub-nav{background:var(--surface);border-bottom:2px solid var(--gold);display:flex;align-items:center;justify-content:space-between;padding:0 20px;position:sticky;top:0;z-index:200;height:44px;box-shadow:0 1px 8px rgba(0,0,0,0.15);}
+.hub-nav-brand{font-family:var(--font-head,'Playfair Display',serif);font-size:.85rem;font-weight:700;font-style:italic;color:var(--gold);white-space:nowrap;}
 .hub-nav-tabs{display:flex;height:100%;align-items:stretch;}
-.hub-tab{font-family:'JetBrains Mono','DM Mono',monospace;font-size:.72rem;text-transform:uppercase;letter-spacing:.1em;padding:0 18px;background:none;border:none;border-bottom:3px solid transparent;color:#7a7060;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:7px;white-space:nowrap;}
+.hub-tab{font-family:'JetBrains Mono','DM Mono',monospace;font-size:.72rem;text-transform:uppercase;letter-spacing:.1em;padding:0 18px;background:none;border:none;border-bottom:3px solid transparent;color:var(--muted);cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:7px;white-space:nowrap;}
 .hub-tab:hover{color:#b8ad9d;}
-.hub-tab.active{color:#c9a84c;border-bottom-color:#c9a84c;background:rgba(201,168,76,.06);}
+.hub-tab.active{color:var(--gold);border-bottom-color:var(--gold);background:var(--gold-bg);}
 .hub-panel{display:none;}
 .hub-panel.active{display:block;}
 .hub-panel .site-header { position: sticky; top: 44px; z-index: 95; }
@@ -2351,6 +2370,7 @@ body.study-mode .stat-box {
       <span id="sync-status" style="font-family:'JetBrains Mono',monospace;font-size:.65rem;color:var(--muted);"></span>
       <button style="font-family:'JetBrains Mono',monospace;font-size:.68rem;text-transform:uppercase;letter-spacing:.08em;padding:5px 10px;background:none;border:1px solid var(--border2);border-radius:2px;color:var(--muted);cursor:pointer;" onclick="saveFile()">↓ Save</button>
       <button style="font-family:'JetBrains Mono',monospace;font-size:.68rem;text-transform:uppercase;letter-spacing:.08em;padding:5px 10px;background:none;border:1px solid var(--border2);border-radius:2px;color:var(--muted);cursor:pointer;" onclick="toggleStudyMode()" id="focus-btn">📖 Focus</button>
+      <button onclick="document.dispatchEvent(new KeyboardEvent('keydown',{key:'?',bubbles:true}))" title="Keyboard shortcuts" style="font-family:'JetBrains Mono',monospace;font-size:.68rem;padding:5px 10px;background:none;border:1px solid var(--border2);border-radius:2px;color:var(--muted);cursor:pointer;">?</button>
       <button style="font-family:'JetBrains Mono',monospace;font-size:.68rem;text-transform:uppercase;letter-spacing:.08em;padding:5px 10px;background:none;border:1px solid var(--border2);border-radius:2px;color:var(--muted);cursor:pointer;" onclick="toggleThemeCombined()" id="theme-btn">☾ Theme</button>
     </div>
   </nav>
@@ -2521,7 +2541,7 @@ body.study-mode .stat-box {
       <div class="timeline-body">
         <div class="timeline-title">Phase 2 — Core: Professor Messer SY0-701 + CertMaster</div>
         <div class="timeline-meta">~9–12 weeks · CertMaster $149/mo or $299/yr · Start alongside Phase 1 or right after</div>
-        <div class="timeline-desc">121 free videos are the backbone. CertMaster Learn ($149/mo) runs in parallel — its adaptive questions and performance tracker show exactly which topics are weak. Activate CertMaster for 1 month during heavy study, then pause or cancel.</div>
+        <div class="timeline-desc">121 free videos are the backbone. <a href="https://www.comptia.org/training/certmaster-learn/security" target="_blank" style="color:var(--accent);text-decoration:none;">CertMaster Learn</a> ($149/mo) runs in parallel — its adaptive questions and performance tracker show exactly which topics are weak. Activate CertMaster for 1 month during heavy study, then pause or cancel.</div>
       </div>
     </div>
 
@@ -2683,7 +2703,7 @@ body.study-mode .stat-box {
     <div style="display:grid;gap:8px;font-family:var(--font-mono);font-size:0.85rem;">
       <div style="display:flex;justify-content:space-between;"><span>Free materials (Google Cert, Messer videos, Anki, Sybex, GCGA, Messer Notes PDF, Messer Practice Exams)</span><span class="text-green">$0</span></div>
       <div style="display:flex;justify-content:space-between;"><span>Messer Study Notes PDF</span><span class="text-green">$0 — you have it</span></div>
-      <div style="display:flex;justify-content:space-between;"><span>CertMaster Learn (1 month)</span><span>~$149</span></div>
+      <div style="display:flex;justify-content:space-between;"><span><a href="https://www.comptia.org/training/certmaster-learn/security" target="_blank" style="color:var(--accent);text-decoration:none;">CertMaster Learn</a> (1 month)</span><span>~$149</span></div>
       <div style="display:flex;justify-content:space-between;"><span>Jason Dion Set 1 (Udemy)</span><span>$13.99</span></div>
       <div style="display:flex;justify-content:space-between;"><span>Jason Dion Set 2 (Udemy)</span><span>$16.99</span></div>
       <div style="display:flex;justify-content:space-between;"><span>Messer Practice Exams</span><span class="text-green">$0 — you have it</span></div>
@@ -2790,7 +2810,8 @@ body.study-mode .stat-box {
 
   <div class="callout callout-blue">
     <span class="callout-icon">🃏</span>
-    <div>Run Anki for <strong>10 minutes every day</strong> you study — not a separate session, just 10 min tacked onto your video session. Log it here to track consistency. Two decks: <strong>Personal Vocab</strong> (307 terms) and <strong>Acronym List</strong> (321 acronyms). <a href="https://drive.google.com/drive/folders/1L3HKH38s8hVo622rsgKCRdJSBDqQ7BBd?usp=drive_link" target="_blank" style="color:var(--accent);font-weight:700;text-decoration:none;">Download Anki Decks →</a></div>
+    <div>Run Anki for <strong>10 minutes every day</strong> you study — not a separate session, just 10 min tacked onto your video session. Log it here to track consistency. Two decks: <strong>Personal Vocab</strong> (307 terms) and <strong>Acronym List</strong> (321 acronyms). <a href="https://drive.google.com/drive/folders/1L3HKH38s8hVo622rsgKCRdJSBDqQ7BBd?usp=drive_link" target="_blank" style="color:var(--accent);font-weight:700;text-decoration:none;">Download Anki Decks →</a>
+    <a href="https://ankiweb.net/decks" target="_blank" style="color:var(--accent);font-weight:700;text-decoration:none;margin-left:14px;">Open AnkiWeb →</a></div>
   </div>
 
   <!-- Stats summary row -->
@@ -3038,7 +3059,7 @@ body.study-mode .stat-box {
       <div class="timeline-body">
         <div class="timeline-title">Phase 2 — Core: Professor Messer SY0-701 + CertMaster</div>
         <div class="timeline-meta">~9–12 weeks · CertMaster $149/mo or $299/yr · Start alongside Phase 1 or right after</div>
-        <div class="timeline-desc">121 free videos are the backbone. CertMaster Learn ($149/mo) runs in parallel — its adaptive questions and performance tracker show exactly which topics are weak. Activate CertMaster for 1 month during heavy study, then pause or cancel.</div>
+        <div class="timeline-desc">121 free videos are the backbone. <a href="https://www.comptia.org/training/certmaster-learn/security" target="_blank" style="color:var(--accent);text-decoration:none;">CertMaster Learn</a> ($149/mo) runs in parallel — its adaptive questions and performance tracker show exactly which topics are weak. Activate CertMaster for 1 month during heavy study, then pause or cancel.</div>
       </div>
     </div>
 
@@ -3198,7 +3219,7 @@ body.study-mode .stat-box {
     <div style="display:grid;gap:8px;font-family:var(--font-mono);font-size:0.85rem;">
       <div style="display:flex;justify-content:space-between;"><span>Free materials (Google Cert, Messer videos, Anki, Sybex, GCGA, Messer Notes PDF, Messer Practice Exams)</span><span class="text-green">$0</span></div>
       <div style="display:flex;justify-content:space-between;"><span>Messer Study Notes PDF</span><span class="text-green">$0 — you have it</span></div>
-      <div style="display:flex;justify-content:space-between;"><span>CertMaster Learn (1 month)</span><span>~$149</span></div>
+      <div style="display:flex;justify-content:space-between;"><span><a href="https://www.comptia.org/training/certmaster-learn/security" target="_blank" style="color:var(--accent);text-decoration:none;">CertMaster Learn</a> (1 month)</span><span>~$149</span></div>
       <div style="display:flex;justify-content:space-between;"><span>Jason Dion Set 1 (Udemy)</span><span>$13.99</span></div>
       <div style="display:flex;justify-content:space-between;"><span>Jason Dion Set 2 (Udemy)</span><span>$16.99</span></div>
       <div style="display:flex;justify-content:space-between;"><span>Messer Practice Exams</span><span class="text-green">$0 — you have it</span></div>
@@ -4622,7 +4643,7 @@ const BUDGET_ITEMS = [
   { id:'b1', name:'Study Guide — Sybex (Chapple) · free PDF', planned:'$0' },
   { id:'b1b', name:'Study Guide — GCGA (Gibson & Shelley) · free PDF', planned:'$0' },
   { id:'b2', name:'Professor Messer Course Notes PDF · free PDF', planned:'$0' },
-  { id:'b3', name:'CertMaster Learn (1 month)', planned:'$149' },
+  { id:'b3', name:'<a href="https://www.comptia.org/training/certmaster-learn/security" target="_blank" style="color:var(--accent);text-decoration:none;">CertMaster Learn</a> (1 month)', planned:'$149' },
   { id:'b4', name:'Jason Dion Practice Exams — Set 1 (Udemy)', planned:'$13.99' },
   { id:'b4b', name:'Jason Dion Practice Exams — Set 2 (Udemy)', planned:'$16.99' },
   { id:'b5', name:'Professor Messer Practice Exams · free PDF', planned:'$0' },
@@ -5336,9 +5357,20 @@ function renderAnkiStats() {
   const feelCounts = {};
   sessions.forEach(s => { if(s.feel) feelCounts[s.feel] = (feelCounts[s.feel]||0)+1; });
   const topFeel = Object.entries(feelCounts).sort((a,b)=>b[1]-a[1])[0];
+  // Weekly stats (last 7 days)
+  const now = new Date(); now.setHours(0,0,0,0);
+  const weekAgo = new Date(now); weekAgo.setDate(now.getDate()-6);
+  const thisWeekSessions = sessions.filter(s => {
+    if (!s.date) return false;
+    const d = new Date(s.date); d.setHours(0,0,0,0);
+    return d >= weekAgo && d <= now;
+  });
+  const weekCards = thisWeekSessions.reduce((a,s) => a + (parseInt(s.cards)||0), 0);
   el.innerHTML = `
-    <div class="stat-box"><div class="stat-num" style="font-size:1.8rem;">${sessions.length}</div><div class="stat-label">Sessions</div></div>
+    <div class="stat-box"><div class="stat-num" style="font-size:1.8rem;">${sessions.length}</div><div class="stat-label">Total Sessions</div></div>
+    <div class="stat-box" style="border-color:var(--green);"><div class="stat-num" style="font-size:1.8rem;color:var(--green);">${thisWeekSessions.length}</div><div class="stat-label">This Week</div></div>
     <div class="stat-box"><div class="stat-num" style="font-size:1.8rem;">${totalCards}</div><div class="stat-label">Total Cards</div></div>
+    <div class="stat-box"><div class="stat-num" style="font-size:1.8rem;">${weekCards}</div><div class="stat-label">Cards This Week</div></div>
     <div class="stat-box"><div class="stat-num" style="font-size:1.8rem;">${avgRetention !== null ? avgRetention+'%' : '—'}</div><div class="stat-label">Avg Retention</div></div>
     <div class="stat-box"><div class="stat-num" style="font-size:1.4rem;">${topFeel ? topFeel[0].split(' ')[1] : '—'}</div><div class="stat-label">Most Common Feel</div></div>
   `;
@@ -6002,7 +6034,7 @@ const WEEKS = [
     days: [
       { day:'Mon', tasks:['Wrong answer deep-dive from Dion Exam 2 — final weak domain sweep (60 min)', 'Anki heavy review (10 min)'] },
       { day:'Tue', tasks:['Sybex end-of-book practice Qs — untimed, open book (45 min)', 'Review every wrong answer (20 min)', 'Anki review (10 min)'] },
-      { day:'Wed', tasks:['PBQ practice — CertMaster labs or TryHackMe SOC scenarios (50 min)', 'Anki light review (10 min)'] },
+      { day:'Wed', tasks:['PBQ practice — CertMaster labs or <a href="https://tryhackme.com/path/outline/soclevel1" target="_blank" style="color:var(--accent);text-decoration:none;">TryHackMe SOC scenarios</a> (50 min)', 'Anki light review (10 min)'] },
       { day:'Thu', tasks:['All-domain final read — Messer Course Notes PDF (60 min)', 'No new material, no practice Qs today'] },
       { day:'Fri', tasks:['Light review only — sections you flagged (25 min)', 'Anki light pass (15 min)', 'Rest — exam tomorrow'] },
       { day:'Sat', tasks:['🧪 Messer Practice Exam 1 — timed 90 min, no notes', '🎯 If 85%+ on this AND either Dion exam: buy voucher and book the real exam today', 'Below 85%: add one more targeted review week before booking'] },
@@ -6713,12 +6745,13 @@ function PR_renderObjChecklist() {
 
       (section.objectives || []).forEach((obj, oi) => {
         const key = `${domain.id}-${section.name}-o${oi}`;
-        const isChecked = prState.objChecks[key] || false;
+        const isChecked = prState.objChecks[key]?.checked || prState.objChecks[key] === true || false;
         const row = document.createElement('div');
         row.style.cssText = 'display:flex;align-items:flex-start;gap:8px;margin-bottom:5px;';
+        const objStoredDate = typeof prState.objChecks[key] === 'object' ? prState.objChecks[key]?.date : null;
         row.innerHTML = `
           <input type="checkbox" id="obj-${key}" ${isChecked ? 'checked' : ''} onchange="PR_toggleObj('${key}',this)" style="margin-top:3px;flex-shrink:0;accent-color:var(--gold);">
-          <label for="obj-${key}" style="font-size:0.82rem;line-height:1.5;color:${isChecked ? 'var(--muted)' : 'var(--text)'};text-decoration:${isChecked ? 'line-through' : 'none'};cursor:pointer;">${obj}</label>`;
+          <label for="obj-${key}" style="font-size:0.82rem;line-height:1.5;color:${isChecked ? 'var(--muted)' : 'var(--text)'};text-decoration:${isChecked ? 'line-through' : 'none'};cursor:pointer;">${obj}${isChecked && objStoredDate ? `<span class="obj-date-stamp" style="font-family:var(--font-mono);font-size:0.62rem;color:var(--dim);margin-left:8px;text-decoration:none;display:inline-block;">✓ ${objStoredDate}</span>` : ''}</label>`;
         sDiv.appendChild(row);
       });
       body.appendChild(sDiv);
@@ -6737,11 +6770,24 @@ function PR_renderObjChecklist() {
 
 function PR_toggleObj(key, cb) {
   if (!prState.objChecks) prState.objChecks = {};
-  prState.objChecks[key] = cb.checked;
+  const objDate = cb.checked ? new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : '';
+  prState.objChecks[key] = { checked: cb.checked, date: objDate };
   const label = document.querySelector(`label[for="obj-${key}"]`);
   if (label) {
     label.style.textDecoration = cb.checked ? 'line-through' : 'none';
     label.style.color = cb.checked ? 'var(--muted)' : '';
+    let objDateSpan = label.querySelector('.obj-date-stamp');
+    if (cb.checked && objDate) {
+      if (!objDateSpan) {
+        objDateSpan = document.createElement('span');
+        objDateSpan.className = 'obj-date-stamp';
+        objDateSpan.style.cssText = 'font-family:var(--font-mono);font-size:0.62rem;color:var(--dim);margin-left:8px;text-decoration:none;display:inline-block;';
+        label.appendChild(objDateSpan);
+      }
+      objDateSpan.textContent = '✓ ' + objDate;
+    } else if (objDateSpan) {
+      objDateSpan.remove();
+    }
   }
   PR_updateDashboard();
 }
@@ -7023,6 +7069,44 @@ function hubSearch(query) {
     });
   });
 
+  // Search EXAM_CHECKLIST
+  EXAM_CHECKLIST.forEach(item => {
+    if (item.title.toLowerCase().includes(q) || (item.sub && item.sub.toLowerCase().includes(q))) {
+      results.push({ type: 'exam', label: item.title, detail: item.sub || '', url: item.url || null, action: "switchHub('portal');switchTabCP('phase3')" });
+    }
+  });
+
+  // Search WEEKS schedule (theme + tasks)
+  WEEKS.forEach(week => {
+    if (week.theme.toLowerCase().includes(q) || week.label.toLowerCase().includes(q)) {
+      results.push({ type: 'week', label: week.label, detail: week.theme, action: "switchHub('portal');switchTabCP('schedule')" });
+    }
+    week.days.forEach(day => {
+      day.tasks.forEach(task => {
+        if (task.toLowerCase().includes(q)) {
+          results.push({ type: 'week', label: 'Wk ' + week.num + ' · ' + day.day, detail: task.substring(0, 80), action: "switchHub('portal');switchTabCP('schedule')" });
+        }
+      });
+    });
+  });
+
+  // Search PHASE1_COURSES (Google Cert)
+  PHASE1_COURSES.forEach(course => {
+    if (course.title.toLowerCase().includes(q)) {
+      results.push({ type: 'gcert', label: course.title, detail: course.modules.length + ' modules', url: course.url, action: "switchHub('portal');switchTabCP('phase1')" });
+    }
+    course.modules.forEach(mod => {
+      if (mod.title.toLowerCase().includes(q)) {
+        results.push({ type: 'gcert', label: mod.title, detail: course.title, url: course.url, action: "switchHub('portal');switchTabCP('phase1')" });
+      }
+      (mod.items || []).forEach(item => {
+        if (item.label.toLowerCase().includes(q)) {
+          results.push({ type: 'gcert', label: item.label, detail: mod.title + ' · ' + course.title, url: course.url, action: "switchHub('portal');switchTabCP('phase1')" });
+        }
+      });
+    });
+  });
+
   // Search section notes
   Object.entries(cpState.sectionNotes || {}).forEach(([key, note]) => {
     if (note && note.toLowerCase().includes(q)) {
@@ -7035,8 +7119,8 @@ function hubSearch(query) {
     return;
   }
 
-  const typeIcon = { term:'🔤', video:'▶', obj:'🎯', note:'📝' };
-  const typeColor = { term:'var(--d3)', video:'var(--gold)', obj:'var(--d1)', note:'var(--d5)' };
+  const typeIcon = { term:'🔤', video:'▶', obj:'🎯', note:'📝', exam:'🧪', week:'📅', gcert:'🎓' };
+  const typeColor = { term:'var(--d3)', video:'var(--gold)', obj:'var(--d1)', note:'var(--d5)', exam:'var(--green)', week:'var(--d2)', gcert:'var(--d3)' };
 
   el.innerHTML = results.slice(0, 12).map(r => `
     <div onclick="${r.action}" style="padding:9px 14px;cursor:pointer;border-bottom:1px solid var(--border2);display:flex;gap:10px;align-items:flex-start;" onmouseover="this.style.background='var(--surface2)'" onmouseout="this.style.background=''">
@@ -7074,6 +7158,88 @@ function renderNotesSummary() {
     </div>`;
   }).join('');
 }
+
+
+// ════════════════════════════════════════════════════════════════════
+// KEYBOARD SHORTCUTS
+// ════════════════════════════════════════════════════════════════════
+document.addEventListener('keydown', function(e) {
+  // Don't fire when typing in inputs/textareas
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.isContentEditable) return;
+  // Don't fire with modifier keys (except Shift for ?)
+  if (e.ctrlKey || e.metaKey || e.altKey) return;
+
+  const hub = document.getElementById('hub-portal')?.classList.contains('active') ? 'portal' : 'premium';
+
+  switch(e.key) {
+    // Tab switching — Portal
+    case '1': if (hub==='portal') { switchTabCP('dashboard'); } break;
+    case '2': if (hub==='portal') { switchTabCP('calendar'); } break;
+    case '3': if (hub==='portal') { switchTabCP('schedule'); } break;
+    case '4': if (hub==='portal') { switchTabCP('phase1'); } break;
+    case '5': if (hub==='portal') { switchTabCP('phase2'); } break;
+    case '6': if (hub==='portal') { switchTabCP('phase3'); } break;
+    case '7': if (hub==='portal') { switchTabCP('anki'); } break;
+    // Tab switching — Reference (same numbers, different panel)
+    case '1': if (hub==='premium') { switchTabPR('dashboard'); } break;
+    case '2': if (hub==='premium') { switchTabPR('schedule'); } break;
+    case '3': if (hub==='premium') { switchTabPR('phase2'); } break;
+    case '4': if (hub==='premium') { switchTabPR('phase3'); } break;
+    case '5': if (hub==='premium') { switchTabPR('anki'); } break;
+    // Hub switching
+    case 'p': case 'P': switchHub('portal'); break;
+    case 'r': case 'R': switchHub('premium'); break;
+    // Search focus
+    case '/': {
+      e.preventDefault();
+      const search = document.getElementById('hub-search-input');
+      if (search) { search.focus(); search.select(); }
+      break;
+    }
+    // Study mode toggle
+    case 'f': case 'F': toggleStudyMode(); break;
+    // Theme toggle
+    case 't': case 'T': toggleThemeCombined(); break;
+    // Jump to next unchecked video
+    case 'n': case 'N': {
+      if (hub==='portal') jumpToNext();
+      else PR_jumpToNext();
+      break;
+    }
+    // Show shortcuts help
+    case '?': {
+      const existing = document.getElementById('kb-help-overlay');
+      if (existing) { existing.remove(); return; }
+      const overlay = document.createElement('div');
+      overlay.id = 'kb-help-overlay';
+      overlay.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:24px 28px;z-index:9999;max-width:400px;width:90%;box-shadow:0 8px 32px rgba(0,0,0,0.4);';
+      overlay.innerHTML = `
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+          <div style="font-family:var(--font-head);font-size:1rem;font-weight:700;">Keyboard Shortcuts</div>
+          <button onclick="document.getElementById('kb-help-overlay').remove()" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:1.2rem;">✕</button>
+        </div>
+        <div style="display:grid;grid-template-columns:auto 1fr;gap:6px 16px;font-size:0.82rem;">
+          <kbd style="font-family:var(--font-mono);background:var(--surface2);padding:2px 7px;border-radius:3px;border:1px solid var(--border);">1–7</kbd><span style="color:var(--text2);">Switch tabs</span>
+          <kbd style="font-family:var(--font-mono);background:var(--surface2);padding:2px 7px;border-radius:3px;border:1px solid var(--border);">P / R</kbd><span style="color:var(--text2);">Portal / Reference panel</span>
+          <kbd style="font-family:var(--font-mono);background:var(--surface2);padding:2px 7px;border-radius:3px;border:1px solid var(--border);">/</kbd><span style="color:var(--text2);">Focus search</span>
+          <kbd style="font-family:var(--font-mono);background:var(--surface2);padding:2px 7px;border-radius:3px;border:1px solid var(--border);">N</kbd><span style="color:var(--text2);">Next unchecked video</span>
+          <kbd style="font-family:var(--font-mono);background:var(--surface2);padding:2px 7px;border-radius:3px;border:1px solid var(--border);">F</kbd><span style="color:var(--text2);">Toggle Focus mode</span>
+          <kbd style="font-family:var(--font-mono);background:var(--surface2);padding:2px 7px;border-radius:3px;border:1px solid var(--border);">T</kbd><span style="color:var(--text2);">Toggle theme</span>
+          <kbd style="font-family:var(--font-mono);background:var(--surface2);padding:2px 7px;border-radius:3px;border:1px solid var(--border);">?</kbd><span style="color:var(--text2);">Show / hide this help</span>
+        </div>
+        <div style="margin-top:14px;font-family:var(--font-mono);font-size:0.65rem;color:var(--muted);">Click anywhere outside to close</div>
+      `;
+      document.body.appendChild(overlay);
+      // Close on outside click
+      setTimeout(() => {
+        document.addEventListener('click', function closeHelp(ev) {
+          if (!overlay.contains(ev.target)) { overlay.remove(); document.removeEventListener('click', closeHelp); }
+        });
+      }, 100);
+      break;
+    }
+  }
+});
 
 document.addEventListener('DOMContentLoaded', initCombined);
 
@@ -8587,12 +8753,13 @@ function PR_renderObjChecklist() {
 
       (section.objectives || []).forEach((obj, oi) => {
         const key = `${domain.id}-${section.name}-o${oi}`;
-        const isChecked = prState.objChecks[key] || false;
+        const isChecked = prState.objChecks[key]?.checked || prState.objChecks[key] === true || false;
         const row = document.createElement('div');
         row.style.cssText = 'display:flex;align-items:flex-start;gap:8px;margin-bottom:5px;';
+        const objStoredDate = typeof prState.objChecks[key] === 'object' ? prState.objChecks[key]?.date : null;
         row.innerHTML = `
           <input type="checkbox" id="obj-${key}" ${isChecked ? 'checked' : ''} onchange="PR_toggleObj('${key}',this)" style="margin-top:3px;flex-shrink:0;accent-color:var(--gold);">
-          <label for="obj-${key}" style="font-size:0.82rem;line-height:1.5;color:${isChecked ? 'var(--muted)' : 'var(--text)'};text-decoration:${isChecked ? 'line-through' : 'none'};cursor:pointer;">${obj}</label>`;
+          <label for="obj-${key}" style="font-size:0.82rem;line-height:1.5;color:${isChecked ? 'var(--muted)' : 'var(--text)'};text-decoration:${isChecked ? 'line-through' : 'none'};cursor:pointer;">${obj}${isChecked && objStoredDate ? `<span class="obj-date-stamp" style="font-family:var(--font-mono);font-size:0.62rem;color:var(--dim);margin-left:8px;text-decoration:none;display:inline-block;">✓ ${objStoredDate}</span>` : ''}</label>`;
         sDiv.appendChild(row);
       });
       body.appendChild(sDiv);
@@ -8611,11 +8778,24 @@ function PR_renderObjChecklist() {
 
 function PR_toggleObj(key, cb) {
   if (!prState.objChecks) prState.objChecks = {};
-  prState.objChecks[key] = cb.checked;
+  const objDate = cb.checked ? new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : '';
+  prState.objChecks[key] = { checked: cb.checked, date: objDate };
   const label = document.querySelector(`label[for="obj-${key}"]`);
   if (label) {
     label.style.textDecoration = cb.checked ? 'line-through' : 'none';
     label.style.color = cb.checked ? 'var(--muted)' : '';
+    let objDateSpan = label.querySelector('.obj-date-stamp');
+    if (cb.checked && objDate) {
+      if (!objDateSpan) {
+        objDateSpan = document.createElement('span');
+        objDateSpan.className = 'obj-date-stamp';
+        objDateSpan.style.cssText = 'font-family:var(--font-mono);font-size:0.62rem;color:var(--dim);margin-left:8px;text-decoration:none;display:inline-block;';
+        label.appendChild(objDateSpan);
+      }
+      objDateSpan.textContent = '✓ ' + objDate;
+    } else if (objDateSpan) {
+      objDateSpan.remove();
+    }
   }
   PR_updateDashboard();
 }
@@ -8750,6 +8930,44 @@ function hubSearch(query) {
     });
   });
 
+  // Search EXAM_CHECKLIST
+  EXAM_CHECKLIST.forEach(item => {
+    if (item.title.toLowerCase().includes(q) || (item.sub && item.sub.toLowerCase().includes(q))) {
+      results.push({ type: 'exam', label: item.title, detail: item.sub || '', url: item.url || null, action: "switchHub('portal');switchTabCP('phase3')" });
+    }
+  });
+
+  // Search WEEKS schedule (theme + tasks)
+  WEEKS.forEach(week => {
+    if (week.theme.toLowerCase().includes(q) || week.label.toLowerCase().includes(q)) {
+      results.push({ type: 'week', label: week.label, detail: week.theme, action: "switchHub('portal');switchTabCP('schedule')" });
+    }
+    week.days.forEach(day => {
+      day.tasks.forEach(task => {
+        if (task.toLowerCase().includes(q)) {
+          results.push({ type: 'week', label: 'Wk ' + week.num + ' · ' + day.day, detail: task.substring(0, 80), action: "switchHub('portal');switchTabCP('schedule')" });
+        }
+      });
+    });
+  });
+
+  // Search PHASE1_COURSES (Google Cert)
+  PHASE1_COURSES.forEach(course => {
+    if (course.title.toLowerCase().includes(q)) {
+      results.push({ type: 'gcert', label: course.title, detail: course.modules.length + ' modules', url: course.url, action: "switchHub('portal');switchTabCP('phase1')" });
+    }
+    course.modules.forEach(mod => {
+      if (mod.title.toLowerCase().includes(q)) {
+        results.push({ type: 'gcert', label: mod.title, detail: course.title, url: course.url, action: "switchHub('portal');switchTabCP('phase1')" });
+      }
+      (mod.items || []).forEach(item => {
+        if (item.label.toLowerCase().includes(q)) {
+          results.push({ type: 'gcert', label: item.label, detail: mod.title + ' · ' + course.title, url: course.url, action: "switchHub('portal');switchTabCP('phase1')" });
+        }
+      });
+    });
+  });
+
   // Search section notes
   Object.entries(cpState.sectionNotes || {}).forEach(([key, note]) => {
     if (note && note.toLowerCase().includes(q)) {
@@ -8762,8 +8980,8 @@ function hubSearch(query) {
     return;
   }
 
-  const typeIcon = { term:'🔤', video:'▶', obj:'🎯', note:'📝' };
-  const typeColor = { term:'var(--d3)', video:'var(--gold)', obj:'var(--d1)', note:'var(--d5)' };
+  const typeIcon = { term:'🔤', video:'▶', obj:'🎯', note:'📝', exam:'🧪', week:'📅', gcert:'🎓' };
+  const typeColor = { term:'var(--d3)', video:'var(--gold)', obj:'var(--d1)', note:'var(--d5)', exam:'var(--green)', week:'var(--d2)', gcert:'var(--d3)' };
 
   el.innerHTML = results.slice(0, 12).map(r => `
     <div onclick="${r.action}" style="padding:9px 14px;cursor:pointer;border-bottom:1px solid var(--border2);display:flex;gap:10px;align-items:flex-start;" onmouseover="this.style.background='var(--surface2)'" onmouseout="this.style.background=''">
@@ -8931,6 +9149,10 @@ document.addEventListener('DOMContentLoaded', initCombined);
   --d5b: #180c20;
 
   --radius: 4px;
+  --radius-card: 10px;
+  --radius-pill: 99px;
+  --card-border: none;
+  --card-shadow: 0 1px 3px rgba(0,0,0,0.3);
   --font-head: 'Source Serif 4', Georgia, serif;
   --font-body: 'Inter', system-ui, sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
@@ -8938,33 +9160,47 @@ document.addEventListener('DOMContentLoaded', initCombined);
 
 [data-theme="light"] {
   --bg: #f5f0e8;
-  --surface: #faf6ee;
+  --surface: #fdf9f3;
   --surface2: #f0ebe0;
   --surface3: #e8e0d0;
-  --border: #d8cfc0;
-  --border2: #c8bba8;
+  --border: #ddd4c0;
+  --border2: #c8b898;
   --text: #1a1510;
-  --text2: #4a4030;
+  --text2: #4a3e2e;
   --muted: #7a6a50;
   --dim: #b8a890;
-  --gold-bg: #fdf8ee;
-  --green-bg: #f0f8f0;
-  --slate-bg: #f0f4f8;
+  --gold-bg: #fdf5e4;
+  --green-bg: #eef7f0;
+  --slate-bg: #eef3f8;
   --d1b: #dceaf5;
   --d2b: #fce8e8;
-  --d3b: #e4f5e8;
-  --d4b: #fdf4da;
+  --d3b: #e2f5e6;
+  --d4b: #fdf2d0;
   --d5b: #f2e4fa;
-  --green: #2a7a42;
-  --green-light: #2a7a42;
-  --crimson-light: #b01e1e;
-  --slate: #3a6a90;
-  --slate-light: #3a6a90;
-  --gold: #8a5c10;
-  --gold-light: #8a5c10;
-  --gold-dim: #c8a060;
-  --yellow: #8a5c10;
-  --red: #b01e1e;
+  /* Richer, warmer gold — amber-brown not olive */
+  --gold: #9a6200;
+  --gold-light: #b87800;
+  --gold-dim: #d4a060;
+  --yellow: #9a6200;
+  /* Deeper, cleaner green */
+  --green: #1e6e3a;
+  --green-light: #1e6e3a;
+  /* Warmer slate/blue */
+  --slate: #2e6090;
+  --slate-light: #2e6090;
+  --accent: #2e6090;
+  /* Errors */
+  --crimson-light: #a81818;
+  --red: #a81818;
+  /* Domain colors — richer in light mode */
+  --d1: #2e6090;
+  --d2: #a81818;
+  --d3: #1e6e3a;
+  --d4: #9a6200;
+  --d5: #7040b0;
+  /* Light mode cards — use borders not shadows */
+  --card-border: 1px solid var(--border);
+  --card-shadow: none;
 }
 
 /* ── Cost pills ── */
@@ -8972,7 +9208,7 @@ document.addEventListener('DOMContentLoaded', initCombined);
 .cost-low  { background: var(--gold-bg); color: var(--gold); border: 1px solid var(--gold-dim); font-weight: 600; }
 .cost-med  { background: var(--d2b); color: var(--d2); border: 1px solid var(--d2); font-weight: 600; }
 .cost-high { background: var(--d2b); color: var(--d2); border: 1px solid var(--d2); font-weight: 600; }
-.phase-tag { background: var(--d1b); color: var(--d1); border: 1px solid var(--d1); font-weight: 600; }
+.phase-tag { background: var(--d1b); color: var(--d1); border: 1px solid var(--d1); border-radius: var(--radius-pill); font-weight: 600; padding: 1px 8px; }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -9176,10 +9412,11 @@ body {
 /* ══ CARDS ══ */
 .card {
   background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
+  border: var(--card-border, 1px solid var(--border));
+  border-radius: var(--radius-card);
   padding: 20px 22px;
   margin-bottom: 16px;
+  box-shadow: var(--card-shadow, none);
 }
 .card-title {
   font-family: var(--font-head);
@@ -9193,16 +9430,16 @@ body {
 /* ══ CALLOUTS ══ */
 .callout {
   display: flex;
-  gap: 12px;
+  gap: 10px;
   align-items: flex-start;
   border-radius: var(--radius);
-  padding: 14px 16px;
-  margin-bottom: 16px;
-  font-size: 0.88rem;
-  line-height: 1.6;
+  padding: 12px 14px;
+  margin-bottom: 12px;
+  font-size: 0.85rem;
+  line-height: 1.55;
 }
 .callout-icon { font-size: 1rem; flex-shrink: 0; margin-top: 1px; }
-.callout-blue  { border-left: 3px solid var(--slate); background: var(--slate-bg); color: var(--text2); }
+.callout-blue  { border-left: 2px solid var(--border2); background: transparent; color: var(--text2); padding: 10px 14px; }
 .callout-yellow{ border-left: 3px solid var(--gold); background: var(--gold-bg); color: var(--text2); }
 .callout-green { border-left: 3px solid var(--green); background: var(--green-bg); color: var(--text2); }
 .callout-red   { border-left: 3px solid var(--crimson-light); background: var(--d2b); color: var(--text2); }
@@ -9219,7 +9456,7 @@ body {
 .stat-box {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: var(--radius);
+  border-radius: 8px;
   padding: 16px 14px;
   text-align: center;
 }
@@ -9315,7 +9552,7 @@ body {
 .domain-card {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: var(--radius);
+  border-radius: var(--radius-card);
   margin-bottom: 10px;
   overflow: hidden;
 }
@@ -9463,7 +9700,7 @@ body {
 .score-input {
   background: var(--surface2);
   border: 1px solid var(--border);
-  border-radius: 2px;
+  border-radius: 4px;
   color: var(--text);
   font-family: var(--font-mono);
   font-size: 0.8rem;
@@ -9524,7 +9761,7 @@ body {
 .anki-form input, .anki-form select, .anki-form textarea {
   background: var(--surface2);
   border: 1px solid var(--border);
-  border-radius: 2px;
+  border-radius: 4px;
   color: var(--text);
   font-family: var(--font-body);
   font-size: 0.85rem;
@@ -9553,7 +9790,7 @@ body {
 .budget-input {
   background: var(--surface2);
   border: 1px solid var(--border);
-  border-radius: 2px;
+  border-radius: 4px;
   color: var(--text);
   font-family: var(--font-mono);
   font-size: 0.8rem;
@@ -9598,7 +9835,7 @@ body {
   font-style: italic;
 }
 .phase-meta { font-family: var(--font-mono); font-size: 0.72rem; color: var(--muted); }
-.phase-tag { font-family: var(--font-mono); font-size: 0.67rem; padding: 3px 8px; border-radius: 2px; text-transform: uppercase; letter-spacing: 0.06em; }
+.phase-tag { font-family: var(--font-mono); font-size: 0.67rem; padding: 3px 8px; border-radius: 99px; text-transform: uppercase; letter-spacing: 0.06em; }
 
 /* ══ TIMELINE ══ */
 .timeline { margin: 0; }
@@ -9627,7 +9864,7 @@ body {
 .week-card {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: var(--radius);
+  border-radius: var(--radius-card);
   margin-bottom: 8px;
   overflow: hidden;
 }
@@ -9833,8 +10070,8 @@ body {
 .cal-chip {
   font-size: 0.63rem;
   line-height: 1.3;
-  padding: 2px 5px;
-  border-radius: 2px;
+  padding: 2px 6px;
+  border-radius: 99px;
   margin-bottom: 2px;
   white-space: nowrap;
   overflow: hidden;
@@ -10746,7 +10983,7 @@ body {
 .score-card {
   background: var(--surface2);
   border: 1px solid var(--border);
-  border-radius: var(--radius);
+  border-radius: var(--radius-card);
   padding: 14px;
 }
 .score-domain-name {
@@ -11105,12 +11342,12 @@ body {
 }
 
 /* ── HUB NAV ── */
-.hub-nav{background:#0e0c0a;border-bottom:2px solid #c9a84c;display:flex;align-items:center;justify-content:space-between;padding:0 20px;position:sticky;top:0;z-index:200;height:44px;}
+.hub-nav{background:var(--surface);border-bottom:2px solid var(--gold);display:flex;align-items:center;justify-content:space-between;padding:0 20px;position:sticky;top:0;z-index:200;height:44px;box-shadow:0 1px 8px rgba(0,0,0,0.15);}
 .hub-nav-brand{font-family:var(--font-head,'Playfair Display',serif);font-size:.85rem;font-weight:700;font-style:italic;color:#c9a84c;white-space:nowrap;}
 .hub-nav-tabs{display:flex;height:100%;align-items:stretch;}
-.hub-tab{font-family:'JetBrains Mono','DM Mono',monospace;font-size:.72rem;text-transform:uppercase;letter-spacing:.1em;padding:0 18px;background:none;border:none;border-bottom:3px solid transparent;color:#7a7060;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:7px;white-space:nowrap;}
+.hub-tab{font-family:'JetBrains Mono','DM Mono',monospace;font-size:.72rem;text-transform:uppercase;letter-spacing:.1em;padding:0 18px;background:none;border:none;border-bottom:3px solid transparent;color:var(--muted);cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:7px;white-space:nowrap;}
 .hub-tab:hover{color:#b8ad9d;}
-.hub-tab.active{color:#c9a84c;border-bottom-color:#c9a84c;background:rgba(201,168,76,.06);}
+.hub-tab.active{color:var(--gold);border-bottom-color:var(--gold);background:var(--gold-bg);}
 .hub-panel{display:none;}
 .hub-panel.active{display:block;}
 .hub-panel .site-header { position: sticky; top: 44px; z-index: 95; }
@@ -11233,6 +11470,7 @@ body.study-mode .stat-box {
       <span id="sync-status" style="font-family:'JetBrains Mono',monospace;font-size:.65rem;color:var(--muted);"></span>
       <button style="font-family:'JetBrains Mono',monospace;font-size:.68rem;text-transform:uppercase;letter-spacing:.08em;padding:5px 10px;background:none;border:1px solid var(--border2);border-radius:2px;color:var(--muted);cursor:pointer;" onclick="saveFile()">↓ Save</button>
       <button style="font-family:'JetBrains Mono',monospace;font-size:.68rem;text-transform:uppercase;letter-spacing:.08em;padding:5px 10px;background:none;border:1px solid var(--border2);border-radius:2px;color:var(--muted);cursor:pointer;" onclick="toggleStudyMode()" id="focus-btn">📖 Focus</button>
+      <button onclick="document.dispatchEvent(new KeyboardEvent('keydown',{key:'?',bubbles:true}))" title="Keyboard shortcuts" style="font-family:'JetBrains Mono',monospace;font-size:.68rem;padding:5px 10px;background:none;border:1px solid var(--border2);border-radius:2px;color:var(--muted);cursor:pointer;">?</button>
       <button style="font-family:'JetBrains Mono',monospace;font-size:.68rem;text-transform:uppercase;letter-spacing:.08em;padding:5px 10px;background:none;border:1px solid var(--border2);border-radius:2px;color:var(--muted);cursor:pointer;" onclick="toggleThemeCombined()" id="theme-btn">☾ Theme</button>
     </div>
   </nav>
@@ -11397,7 +11635,7 @@ body.study-mode .stat-box {
       <div class="timeline-body">
         <div class="timeline-title">Phase 2 — Core: Professor Messer SY0-701 + CertMaster</div>
         <div class="timeline-meta">~9–12 weeks · CertMaster $149/mo or $299/yr · Start alongside Phase 1 or right after</div>
-        <div class="timeline-desc">121 free videos are the backbone. CertMaster Learn ($149/mo) runs in parallel — its adaptive questions and performance tracker show exactly which topics are weak. Activate CertMaster for 1 month during heavy study, then pause or cancel.</div>
+        <div class="timeline-desc">121 free videos are the backbone. <a href="https://www.comptia.org/training/certmaster-learn/security" target="_blank" style="color:var(--accent);text-decoration:none;">CertMaster Learn</a> ($149/mo) runs in parallel — its adaptive questions and performance tracker show exactly which topics are weak. Activate CertMaster for 1 month during heavy study, then pause or cancel.</div>
       </div>
     </div>
 
@@ -11559,7 +11797,7 @@ body.study-mode .stat-box {
     <div style="display:grid;gap:8px;font-family:var(--font-mono);font-size:0.85rem;">
       <div style="display:flex;justify-content:space-between;"><span>Free materials (Google Cert, Messer videos, Anki, Sybex, GCGA, Messer Notes PDF, Messer Practice Exams)</span><span class="text-green">$0</span></div>
       <div style="display:flex;justify-content:space-between;"><span>Messer Study Notes PDF</span><span class="text-green">$0 — you have it</span></div>
-      <div style="display:flex;justify-content:space-between;"><span>CertMaster Learn (1 month)</span><span>~$149</span></div>
+      <div style="display:flex;justify-content:space-between;"><span><a href="https://www.comptia.org/training/certmaster-learn/security" target="_blank" style="color:var(--accent);text-decoration:none;">CertMaster Learn</a> (1 month)</span><span>~$149</span></div>
       <div style="display:flex;justify-content:space-between;"><span>Jason Dion Set 1 (Udemy)</span><span>$13.99</span></div>
       <div style="display:flex;justify-content:space-between;"><span>Jason Dion Set 2 (Udemy)</span><span>$16.99</span></div>
       <div style="display:flex;justify-content:space-between;"><span>Messer Practice Exams</span><span class="text-green">$0 — you have it</span></div>
@@ -11666,7 +11904,8 @@ body.study-mode .stat-box {
 
   <div class="callout callout-blue">
     <span class="callout-icon">🃏</span>
-    <div>Run Anki for <strong>10 minutes every day</strong> you study — not a separate session, just 10 min tacked onto your video session. Log it here to track consistency. Two decks: <strong>Personal Vocab</strong> (307 terms) and <strong>Acronym List</strong> (321 acronyms). <a href="https://drive.google.com/drive/folders/1L3HKH38s8hVo622rsgKCRdJSBDqQ7BBd?usp=drive_link" target="_blank" style="color:var(--accent);font-weight:700;text-decoration:none;">Download Anki Decks →</a></div>
+    <div>Run Anki for <strong>10 minutes every day</strong> you study — not a separate session, just 10 min tacked onto your video session. Log it here to track consistency. Two decks: <strong>Personal Vocab</strong> (307 terms) and <strong>Acronym List</strong> (321 acronyms). <a href="https://drive.google.com/drive/folders/1L3HKH38s8hVo622rsgKCRdJSBDqQ7BBd?usp=drive_link" target="_blank" style="color:var(--accent);font-weight:700;text-decoration:none;">Download Anki Decks →</a>
+    <a href="https://ankiweb.net/decks" target="_blank" style="color:var(--accent);font-weight:700;text-decoration:none;margin-left:14px;">Open AnkiWeb →</a></div>
   </div>
 
   <!-- Stats summary row -->
@@ -11913,7 +12152,7 @@ body.study-mode .stat-box {
       <div class="timeline-body">
         <div class="timeline-title">Phase 2 — Core: Professor Messer SY0-701 + CertMaster</div>
         <div class="timeline-meta">~9–12 weeks · CertMaster $149/mo or $299/yr · Start alongside Phase 1 or right after</div>
-        <div class="timeline-desc">121 free videos are the backbone. CertMaster Learn ($149/mo) runs in parallel — its adaptive questions and performance tracker show exactly which topics are weak. Activate CertMaster for 1 month during heavy study, then pause or cancel.</div>
+        <div class="timeline-desc">121 free videos are the backbone. <a href="https://www.comptia.org/training/certmaster-learn/security" target="_blank" style="color:var(--accent);text-decoration:none;">CertMaster Learn</a> ($149/mo) runs in parallel — its adaptive questions and performance tracker show exactly which topics are weak. Activate CertMaster for 1 month during heavy study, then pause or cancel.</div>
       </div>
     </div>
 
@@ -12073,7 +12312,7 @@ body.study-mode .stat-box {
     <div style="display:grid;gap:8px;font-family:var(--font-mono);font-size:0.85rem;">
       <div style="display:flex;justify-content:space-between;"><span>Free materials (Google Cert, Messer videos, Anki, Sybex, GCGA, Messer Notes PDF, Messer Practice Exams)</span><span class="text-green">$0</span></div>
       <div style="display:flex;justify-content:space-between;"><span>Messer Study Notes PDF</span><span class="text-green">$0 — you have it</span></div>
-      <div style="display:flex;justify-content:space-between;"><span>CertMaster Learn (1 month)</span><span>~$149</span></div>
+      <div style="display:flex;justify-content:space-between;"><span><a href="https://www.comptia.org/training/certmaster-learn/security" target="_blank" style="color:var(--accent);text-decoration:none;">CertMaster Learn</a> (1 month)</span><span>~$149</span></div>
       <div style="display:flex;justify-content:space-between;"><span>Jason Dion Set 1 (Udemy)</span><span>$13.99</span></div>
       <div style="display:flex;justify-content:space-between;"><span>Jason Dion Set 2 (Udemy)</span><span>$16.99</span></div>
       <div style="display:flex;justify-content:space-between;"><span>Messer Practice Exams</span><span class="text-green">$0 — you have it</span></div>
@@ -12190,7 +12429,8 @@ body.study-mode .stat-box {
 
   <div class="callout callout-blue">
     <span class="callout-icon">🃏</span>
-    <div>Run Anki for <strong>10 minutes every day</strong> you study — not a separate session, just 10 min tacked onto your video session. Log it here to track consistency. Two decks: <strong>Personal Vocab</strong> (307 terms) and <strong>Acronym List</strong> (321 acronyms). <a href="https://drive.google.com/drive/folders/1L3HKH38s8hVo622rsgKCRdJSBDqQ7BBd?usp=drive_link" target="_blank" style="color:var(--accent);font-weight:700;text-decoration:none;">Download Anki Decks →</a></div>
+    <div>Run Anki for <strong>10 minutes every day</strong> you study — not a separate session, just 10 min tacked onto your video session. Log it here to track consistency. Two decks: <strong>Personal Vocab</strong> (307 terms) and <strong>Acronym List</strong> (321 acronyms). <a href="https://drive.google.com/drive/folders/1L3HKH38s8hVo622rsgKCRdJSBDqQ7BBd?usp=drive_link" target="_blank" style="color:var(--accent);font-weight:700;text-decoration:none;">Download Anki Decks →</a>
+    <a href="https://ankiweb.net/decks" target="_blank" style="color:var(--accent);font-weight:700;text-decoration:none;margin-left:14px;">Open AnkiWeb →</a></div>
   </div>
 
   <!-- Stats summary row -->
@@ -13028,9 +13268,20 @@ function renderAnkiStats() {
   const feelCounts = {};
   sessions.forEach(s => { if(s.feel) feelCounts[s.feel] = (feelCounts[s.feel]||0)+1; });
   const topFeel = Object.entries(feelCounts).sort((a,b)=>b[1]-a[1])[0];
+  // Weekly stats (last 7 days)
+  const now = new Date(); now.setHours(0,0,0,0);
+  const weekAgo = new Date(now); weekAgo.setDate(now.getDate()-6);
+  const thisWeekSessions = sessions.filter(s => {
+    if (!s.date) return false;
+    const d = new Date(s.date); d.setHours(0,0,0,0);
+    return d >= weekAgo && d <= now;
+  });
+  const weekCards = thisWeekSessions.reduce((a,s) => a + (parseInt(s.cards)||0), 0);
   el.innerHTML = `
-    <div class="stat-box"><div class="stat-num" style="font-size:1.8rem;">${sessions.length}</div><div class="stat-label">Sessions</div></div>
+    <div class="stat-box"><div class="stat-num" style="font-size:1.8rem;">${sessions.length}</div><div class="stat-label">Total Sessions</div></div>
+    <div class="stat-box" style="border-color:var(--green);"><div class="stat-num" style="font-size:1.8rem;color:var(--green);">${thisWeekSessions.length}</div><div class="stat-label">This Week</div></div>
     <div class="stat-box"><div class="stat-num" style="font-size:1.8rem;">${totalCards}</div><div class="stat-label">Total Cards</div></div>
+    <div class="stat-box"><div class="stat-num" style="font-size:1.8rem;">${weekCards}</div><div class="stat-label">Cards This Week</div></div>
     <div class="stat-box"><div class="stat-num" style="font-size:1.8rem;">${avgRetention !== null ? avgRetention+'%' : '—'}</div><div class="stat-label">Avg Retention</div></div>
     <div class="stat-box"><div class="stat-num" style="font-size:1.4rem;">${topFeel ? topFeel[0].split(' ')[1] : '—'}</div><div class="stat-label">Most Common Feel</div></div>
   `;
@@ -14150,12 +14401,13 @@ function PR_renderObjChecklist() {
 
       (section.objectives || []).forEach((obj, oi) => {
         const key = `${domain.id}-${section.name}-o${oi}`;
-        const isChecked = prState.objChecks[key] || false;
+        const isChecked = prState.objChecks[key]?.checked || prState.objChecks[key] === true || false;
         const row = document.createElement('div');
         row.style.cssText = 'display:flex;align-items:flex-start;gap:8px;margin-bottom:5px;';
+        const objStoredDate = typeof prState.objChecks[key] === 'object' ? prState.objChecks[key]?.date : null;
         row.innerHTML = `
           <input type="checkbox" id="obj-${key}" ${isChecked ? 'checked' : ''} onchange="PR_toggleObj('${key}',this)" style="margin-top:3px;flex-shrink:0;accent-color:var(--gold);">
-          <label for="obj-${key}" style="font-size:0.82rem;line-height:1.5;color:${isChecked ? 'var(--muted)' : 'var(--text)'};text-decoration:${isChecked ? 'line-through' : 'none'};cursor:pointer;">${obj}</label>`;
+          <label for="obj-${key}" style="font-size:0.82rem;line-height:1.5;color:${isChecked ? 'var(--muted)' : 'var(--text)'};text-decoration:${isChecked ? 'line-through' : 'none'};cursor:pointer;">${obj}${isChecked && objStoredDate ? `<span class="obj-date-stamp" style="font-family:var(--font-mono);font-size:0.62rem;color:var(--dim);margin-left:8px;text-decoration:none;display:inline-block;">✓ ${objStoredDate}</span>` : ''}</label>`;
         sDiv.appendChild(row);
       });
       body.appendChild(sDiv);
@@ -14174,11 +14426,24 @@ function PR_renderObjChecklist() {
 
 function PR_toggleObj(key, cb) {
   if (!prState.objChecks) prState.objChecks = {};
-  prState.objChecks[key] = cb.checked;
+  const objDate = cb.checked ? new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : '';
+  prState.objChecks[key] = { checked: cb.checked, date: objDate };
   const label = document.querySelector(`label[for="obj-${key}"]`);
   if (label) {
     label.style.textDecoration = cb.checked ? 'line-through' : 'none';
     label.style.color = cb.checked ? 'var(--muted)' : '';
+    let objDateSpan = label.querySelector('.obj-date-stamp');
+    if (cb.checked && objDate) {
+      if (!objDateSpan) {
+        objDateSpan = document.createElement('span');
+        objDateSpan.className = 'obj-date-stamp';
+        objDateSpan.style.cssText = 'font-family:var(--font-mono);font-size:0.62rem;color:var(--dim);margin-left:8px;text-decoration:none;display:inline-block;';
+        label.appendChild(objDateSpan);
+      }
+      objDateSpan.textContent = '✓ ' + objDate;
+    } else if (objDateSpan) {
+      objDateSpan.remove();
+    }
   }
   PR_updateDashboard();
 }
@@ -14313,6 +14578,44 @@ function hubSearch(query) {
     });
   });
 
+  // Search EXAM_CHECKLIST
+  EXAM_CHECKLIST.forEach(item => {
+    if (item.title.toLowerCase().includes(q) || (item.sub && item.sub.toLowerCase().includes(q))) {
+      results.push({ type: 'exam', label: item.title, detail: item.sub || '', url: item.url || null, action: "switchHub('portal');switchTabCP('phase3')" });
+    }
+  });
+
+  // Search WEEKS schedule (theme + tasks)
+  WEEKS.forEach(week => {
+    if (week.theme.toLowerCase().includes(q) || week.label.toLowerCase().includes(q)) {
+      results.push({ type: 'week', label: week.label, detail: week.theme, action: "switchHub('portal');switchTabCP('schedule')" });
+    }
+    week.days.forEach(day => {
+      day.tasks.forEach(task => {
+        if (task.toLowerCase().includes(q)) {
+          results.push({ type: 'week', label: 'Wk ' + week.num + ' · ' + day.day, detail: task.substring(0, 80), action: "switchHub('portal');switchTabCP('schedule')" });
+        }
+      });
+    });
+  });
+
+  // Search PHASE1_COURSES (Google Cert)
+  PHASE1_COURSES.forEach(course => {
+    if (course.title.toLowerCase().includes(q)) {
+      results.push({ type: 'gcert', label: course.title, detail: course.modules.length + ' modules', url: course.url, action: "switchHub('portal');switchTabCP('phase1')" });
+    }
+    course.modules.forEach(mod => {
+      if (mod.title.toLowerCase().includes(q)) {
+        results.push({ type: 'gcert', label: mod.title, detail: course.title, url: course.url, action: "switchHub('portal');switchTabCP('phase1')" });
+      }
+      (mod.items || []).forEach(item => {
+        if (item.label.toLowerCase().includes(q)) {
+          results.push({ type: 'gcert', label: item.label, detail: mod.title + ' · ' + course.title, url: course.url, action: "switchHub('portal');switchTabCP('phase1')" });
+        }
+      });
+    });
+  });
+
   // Search section notes
   Object.entries(cpState.sectionNotes || {}).forEach(([key, note]) => {
     if (note && note.toLowerCase().includes(q)) {
@@ -14325,8 +14628,8 @@ function hubSearch(query) {
     return;
   }
 
-  const typeIcon = { term:'🔤', video:'▶', obj:'🎯', note:'📝' };
-  const typeColor = { term:'var(--d3)', video:'var(--gold)', obj:'var(--d1)', note:'var(--d5)' };
+  const typeIcon = { term:'🔤', video:'▶', obj:'🎯', note:'📝', exam:'🧪', week:'📅', gcert:'🎓' };
+  const typeColor = { term:'var(--d3)', video:'var(--gold)', obj:'var(--d1)', note:'var(--d5)', exam:'var(--green)', week:'var(--d2)', gcert:'var(--d3)' };
 
   el.innerHTML = results.slice(0, 12).map(r => `
     <div onclick="${r.action}" style="padding:9px 14px;cursor:pointer;border-bottom:1px solid var(--border2);display:flex;gap:10px;align-items:flex-start;" onmouseover="this.style.background='var(--surface2)'" onmouseout="this.style.background=''">
@@ -15864,12 +16167,13 @@ function PR_renderObjChecklist() {
 
       (section.objectives || []).forEach((obj, oi) => {
         const key = `${domain.id}-${section.name}-o${oi}`;
-        const isChecked = prState.objChecks[key] || false;
+        const isChecked = prState.objChecks[key]?.checked || prState.objChecks[key] === true || false;
         const row = document.createElement('div');
         row.style.cssText = 'display:flex;align-items:flex-start;gap:8px;margin-bottom:5px;';
+        const objStoredDate = typeof prState.objChecks[key] === 'object' ? prState.objChecks[key]?.date : null;
         row.innerHTML = `
           <input type="checkbox" id="obj-${key}" ${isChecked ? 'checked' : ''} onchange="PR_toggleObj('${key}',this)" style="margin-top:3px;flex-shrink:0;accent-color:var(--gold);">
-          <label for="obj-${key}" style="font-size:0.82rem;line-height:1.5;color:${isChecked ? 'var(--muted)' : 'var(--text)'};text-decoration:${isChecked ? 'line-through' : 'none'};cursor:pointer;">${obj}</label>`;
+          <label for="obj-${key}" style="font-size:0.82rem;line-height:1.5;color:${isChecked ? 'var(--muted)' : 'var(--text)'};text-decoration:${isChecked ? 'line-through' : 'none'};cursor:pointer;">${obj}${isChecked && objStoredDate ? `<span class="obj-date-stamp" style="font-family:var(--font-mono);font-size:0.62rem;color:var(--dim);margin-left:8px;text-decoration:none;display:inline-block;">✓ ${objStoredDate}</span>` : ''}</label>`;
         sDiv.appendChild(row);
       });
       body.appendChild(sDiv);
@@ -15888,11 +16192,24 @@ function PR_renderObjChecklist() {
 
 function PR_toggleObj(key, cb) {
   if (!prState.objChecks) prState.objChecks = {};
-  prState.objChecks[key] = cb.checked;
+  const objDate = cb.checked ? new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : '';
+  prState.objChecks[key] = { checked: cb.checked, date: objDate };
   const label = document.querySelector(`label[for="obj-${key}"]`);
   if (label) {
     label.style.textDecoration = cb.checked ? 'line-through' : 'none';
     label.style.color = cb.checked ? 'var(--muted)' : '';
+    let objDateSpan = label.querySelector('.obj-date-stamp');
+    if (cb.checked && objDate) {
+      if (!objDateSpan) {
+        objDateSpan = document.createElement('span');
+        objDateSpan.className = 'obj-date-stamp';
+        objDateSpan.style.cssText = 'font-family:var(--font-mono);font-size:0.62rem;color:var(--dim);margin-left:8px;text-decoration:none;display:inline-block;';
+        label.appendChild(objDateSpan);
+      }
+      objDateSpan.textContent = '✓ ' + objDate;
+    } else if (objDateSpan) {
+      objDateSpan.remove();
+    }
   }
   PR_updateDashboard();
 }
@@ -16027,6 +16344,44 @@ function hubSearch(query) {
     });
   });
 
+  // Search EXAM_CHECKLIST
+  EXAM_CHECKLIST.forEach(item => {
+    if (item.title.toLowerCase().includes(q) || (item.sub && item.sub.toLowerCase().includes(q))) {
+      results.push({ type: 'exam', label: item.title, detail: item.sub || '', url: item.url || null, action: "switchHub('portal');switchTabCP('phase3')" });
+    }
+  });
+
+  // Search WEEKS schedule (theme + tasks)
+  WEEKS.forEach(week => {
+    if (week.theme.toLowerCase().includes(q) || week.label.toLowerCase().includes(q)) {
+      results.push({ type: 'week', label: week.label, detail: week.theme, action: "switchHub('portal');switchTabCP('schedule')" });
+    }
+    week.days.forEach(day => {
+      day.tasks.forEach(task => {
+        if (task.toLowerCase().includes(q)) {
+          results.push({ type: 'week', label: 'Wk ' + week.num + ' · ' + day.day, detail: task.substring(0, 80), action: "switchHub('portal');switchTabCP('schedule')" });
+        }
+      });
+    });
+  });
+
+  // Search PHASE1_COURSES (Google Cert)
+  PHASE1_COURSES.forEach(course => {
+    if (course.title.toLowerCase().includes(q)) {
+      results.push({ type: 'gcert', label: course.title, detail: course.modules.length + ' modules', url: course.url, action: "switchHub('portal');switchTabCP('phase1')" });
+    }
+    course.modules.forEach(mod => {
+      if (mod.title.toLowerCase().includes(q)) {
+        results.push({ type: 'gcert', label: mod.title, detail: course.title, url: course.url, action: "switchHub('portal');switchTabCP('phase1')" });
+      }
+      (mod.items || []).forEach(item => {
+        if (item.label.toLowerCase().includes(q)) {
+          results.push({ type: 'gcert', label: item.label, detail: mod.title + ' · ' + course.title, url: course.url, action: "switchHub('portal');switchTabCP('phase1')" });
+        }
+      });
+    });
+  });
+
   // Search section notes
   Object.entries(cpState.sectionNotes || {}).forEach(([key, note]) => {
     if (note && note.toLowerCase().includes(q)) {
@@ -16039,8 +16394,8 @@ function hubSearch(query) {
     return;
   }
 
-  const typeIcon = { term:'🔤', video:'▶', obj:'🎯', note:'📝' };
-  const typeColor = { term:'var(--d3)', video:'var(--gold)', obj:'var(--d1)', note:'var(--d5)' };
+  const typeIcon = { term:'🔤', video:'▶', obj:'🎯', note:'📝', exam:'🧪', week:'📅', gcert:'🎓' };
+  const typeColor = { term:'var(--d3)', video:'var(--gold)', obj:'var(--d1)', note:'var(--d5)', exam:'var(--green)', week:'var(--d2)', gcert:'var(--d3)' };
 
   el.innerHTML = results.slice(0, 12).map(r => `
     <div onclick="${r.action}" style="padding:9px 14px;cursor:pointer;border-bottom:1px solid var(--border2);display:flex;gap:10px;align-items:flex-start;" onmouseover="this.style.background='var(--surface2)'" onmouseout="this.style.background=''">
