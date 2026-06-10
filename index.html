@@ -3916,12 +3916,8 @@ document.addEventListener('click', function(e) {
 <script id="progress-data" type="application/json">{}</script>
 <script>
 // ── Config ──
-const SUPABASE_URL    = 'https://uodosnjwixwbsyzkkovg.supabase.co
-
-';      // e.g. https://xxxx.supabase.co
-const SUPABASE_ANON   = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVvZG9zbmp3aXh3YnN5emtrb3ZnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA2NDAwNDAsImV4cCI6MjA5NjIxNjA0MH0.tm28ev7T__1xmJ6sTIMVtBDeP_CG9Ws68gJ0R1CMpdk
-
-'; // Project Settings → API
+const SUPABASE_URL    = 'https://uodosnjwixwbsyzkkovg.supabase.co';      // e.g. https://xxxx.supabase.co
+const SUPABASE_ANON   = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVvZG9zbmp3aXh3YnN5emtrb3ZnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA2NDAwNDAsImV4cCI6MjA5NjIxNjA0MH0.tm28ev7T__1xmJ6sTIMVtBDeP_CG9Ws68gJ0R1CMpdk'; // Project Settings → API
 const PASSPHRASE      = 'caffeineandcyber';         // anything you'll remember
 const DB_TABLE = 'progress';
 const CP_DB_KEY = 'csec701';
@@ -5174,10 +5170,10 @@ async function saveFile() {
   const combined = { cp: cpState, pr: prState };
   const json = JSON.stringify(combined);
   const html = document.documentElement.outerHTML;
-  const updated = html.replace(
-    /<script id="progress-data" type="application\/json">[\s\S]*?<\/script>/,
-    `<script id="progress-data" type="application/json">${json}<\/script>`
-  );
+  const openTag = ['<','s','c','r','i','p','t',' ','i','d','=','"','p','r','o','g','r','e','s','s','-','d','a','t','a','"',' ','t','y','p','e','=','"','a','p','p','l','i','c','a','t','i','o','n','/','j','s','o','n','"','>'].join('');
+  const closeTag = ['<','/','s','c','r','i','p','t','>'].join('');
+  const pdRegex = new RegExp(openTag.replace(/[.*+?^${}()|[\]\\]/g,'\\$&') + '[\s\S]*?' + closeTag.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'));
+  const updated = html.replace(pdRegex, openTag + json + closeTag);
   const blob = new Blob([updated], { type: 'text/html' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
@@ -14268,10 +14264,10 @@ async function saveFile() {
   const combined = { cp: cpState, pr: prState };
   const json = JSON.stringify(combined);
   const html = document.documentElement.outerHTML;
-  const updated = html.replace(
-    /<script id="progress-data" type="application\/json">[\s\S]*?<\/script>/,
-    `<script id="progress-data" type="application/json">${json}<\/script>`
-  );
+  const openTag = ['<','s','c','r','i','p','t',' ','i','d','=','"','p','r','o','g','r','e','s','s','-','d','a','t','a','"',' ','t','y','p','e','=','"','a','p','p','l','i','c','a','t','i','o','n','/','j','s','o','n','"','>'].join('');
+  const closeTag = ['<','/','s','c','r','i','p','t','>'].join('');
+  const pdRegex = new RegExp(openTag.replace(/[.*+?^${}()|[\]\\]/g,'\\$&') + '[\s\S]*?' + closeTag.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'));
+  const updated = html.replace(pdRegex, openTag + json + closeTag);
   const blob = new Blob([updated], { type: 'text/html' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
