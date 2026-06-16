@@ -15772,7 +15772,7 @@ function unlock(phrase) { if(phrase===PASSPHRASE){sessionStorage.setItem('unlock
 // DB
 async function dbGet(key) {
   try {
-    const r = await fetch(`${SUPABASE_URL}/rest/v1/${DB_TABLE}?key=eq.${key}&select=value`,
+    const r = await fetch(`${SUPABASE_URL}${DB_TABLE}?key=eq.${key}&select=value`,
       {headers:{apikey:SUPABASE_ANON,Authorization:`Bearer ${SUPABASE_ANON}`}});
     const rows = await r.json();
     return rows&&rows[0] ? JSON.parse(rows[0].value) : null;
@@ -15780,7 +15780,7 @@ async function dbGet(key) {
 }
 async function dbSet(key, data) {
   try {
-    await fetch(`${SUPABASE_URL}/rest/v1/${DB_TABLE}`,{
+    await fetch(`${SUPABASE_URL}${DB_TABLE}`,{
       method:'POST',
       headers:{apikey:SUPABASE_ANON,Authorization:`Bearer ${SUPABASE_ANON}`,'Content-Type':'application/json',Prefer:'resolution=merge-duplicates'},
       body:JSON.stringify({key,value:JSON.stringify(data)})
@@ -19292,7 +19292,7 @@ function unlock(phrase) { if(phrase===PASSPHRASE){sessionStorage.setItem('unlock
 // DB
 async function dbGet(key) {
   try {
-    const r = await fetch(`${SUPABASE_URL}/rest/v1/${DB_TABLE}?key=eq.${key}&select=value`,
+    const r = await fetch(`${SUPABASE_URL}${DB_TABLE}?key=eq.${key}&select=value`,
       {headers:{apikey:SUPABASE_ANON,Authorization:`Bearer ${SUPABASE_ANON}`}});
     const rows = await r.json();
     return rows&&rows[0] ? JSON.parse(rows[0].value) : null;
@@ -19300,7 +19300,7 @@ async function dbGet(key) {
 }
 async function dbSet(key, data) {
   try {
-    await fetch(`${SUPABASE_URL}/rest/v1/${DB_TABLE}`,{
+    await fetch(`${SUPABASE_URL}${DB_TABLE}`,{
       method:'POST',
       headers:{apikey:SUPABASE_ANON,Authorization:`Bearer ${SUPABASE_ANON}`,'Content-Type':'application/json',Prefer:'resolution=merge-duplicates'},
       body:JSON.stringify({key,value:JSON.stringify(data)})
