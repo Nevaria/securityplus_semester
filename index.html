@@ -15128,6 +15128,7 @@ function PR_renderAnkiStats() {
 
 function PR_renderAnkiLog() {
   const el = document.getElementById('pr-anki-log-list');
+  if (!el) return;
   if (!prState.anki || prState.anki.length === 0) {
     el.innerHTML = '<div style="color:var(--muted);font-size:0.88rem;">No sessions logged yet.</div>';
     PR_renderAnkiStats();
@@ -18650,6 +18651,7 @@ function PR_renderAnkiStats() {
 
 function PR_renderAnkiLog() {
   const el = document.getElementById('pr-anki-log-list');
+  if (!el) return;
   if (!prState.anki || prState.anki.length === 0) {
     el.innerHTML = '<div style="color:var(--muted);font-size:0.88rem;">No sessions logged yet.</div>';
     PR_renderAnkiStats();
