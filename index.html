@@ -2368,10 +2368,10 @@ body.study-mode .stat-box {
 
 <nav class="tab-bar">
   <div class="tab-bar-inner">
-  <button class="tab-btn" onclick="switchTabCP('dashboard')">🏠 Home</button>
+  <button class="tab-btn active" onclick="switchTabCP('dashboard')">🏠 Home</button>
   <button class="tab-btn" onclick="switchTabCP('schedule')">📅 Schedule</button>
   <button class="tab-btn" onclick="switchTabCP('calendar')">🗓 Calendar</button>
-  <button class="tab-btn active" onclick="switchTabCP('phase1')">✅ Prerequisites</button>
+  <button class="tab-btn" onclick="switchTabCP('phase1')">✅ Prerequisites</button>
   <button class="tab-btn" onclick="switchTabCP('phase2')">▶ Lecture Series</button>
   <button class="tab-btn" onclick="switchTabCP('phase3')">📝 Examinations</button>
   <button class="tab-btn" onclick="switchTabCP('anki')">🃏 Review Lab</button>
@@ -12381,13 +12381,13 @@ function switchTabCP(id) {
   if (!panel) return;
   panel.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
   panel.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-  const tab = document.getElementById('cp-tab-' + id);
+  const tab = panel.querySelector('#cp-tab-' + id);
   if (tab) tab.classList.add('active');
   panel.querySelectorAll('.tab-btn').forEach(b => {
     const onclick = b.getAttribute('onclick') || '';
     if (onclick.includes("'" + id + "'")) b.classList.add('active');
   });
-  const nextBtn = document.getElementById('cp-next-video-btn');
+  const nextBtn = panel.querySelector('#cp-next-video-btn');
   if (nextBtn) nextBtn.style.display = id === 'phase2' ? 'block' : 'none';
   updateDashboard();
   window.scrollTo({top: 0, behavior: 'smooth'});
@@ -14567,13 +14567,13 @@ function switchTabPR(id) {
   if (!panel) return;
   panel.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
   panel.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-  const tab = document.getElementById('pr-tab-' + id);
+  const tab = panel.querySelector('#pr-tab-' + id);
   if (tab) tab.classList.add('active');
   panel.querySelectorAll('.tab-btn').forEach(b => {
     const onclick = b.getAttribute('onclick') || '';
     if (onclick.includes("'" + id + "'")) b.classList.add('active');
   });
-  const nextBtn = document.getElementById('pr-next-video-btn');
+  const nextBtn = panel.querySelector('#pr-next-video-btn');
   if (nextBtn) nextBtn.style.display = id === 'phase2' ? 'block' : 'none';
   PR_updateDashboard();
   window.scrollTo({top: 0, behavior: 'smooth'});
@@ -19706,13 +19706,13 @@ function switchTabCP(id) {
   if (!panel) return;
   panel.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
   panel.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-  const tab = document.getElementById('cp-tab-' + id);
+  const tab = panel.querySelector('#cp-tab-' + id);
   if (tab) tab.classList.add('active');
   panel.querySelectorAll('.tab-btn').forEach(b => {
     const onclick = b.getAttribute('onclick') || '';
     if (onclick.includes("'" + id + "'")) b.classList.add('active');
   });
-  const nextBtn = document.getElementById('cp-next-video-btn');
+  const nextBtn = panel.querySelector('#cp-next-video-btn');
   if (nextBtn) nextBtn.style.display = id === 'phase2' ? 'block' : 'none';
   updateDashboard();
   window.scrollTo({top: 0, behavior: 'smooth'});
@@ -21482,13 +21482,13 @@ function switchTabPR(id) {
   if (!panel) return;
   panel.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
   panel.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-  const tab = document.getElementById('pr-tab-' + id);
+  const tab = panel.querySelector('#pr-tab-' + id);
   if (tab) tab.classList.add('active');
   panel.querySelectorAll('.tab-btn').forEach(b => {
     const onclick = b.getAttribute('onclick') || '';
     if (onclick.includes("'" + id + "'")) b.classList.add('active');
   });
-  const nextBtn = document.getElementById('pr-next-video-btn');
+  const nextBtn = panel.querySelector('#pr-next-video-btn');
   if (nextBtn) nextBtn.style.display = id === 'phase2' ? 'block' : 'none';
   PR_updateDashboard();
   window.scrollTo({top: 0, behavior: 'smooth'});
