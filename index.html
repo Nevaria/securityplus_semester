@@ -12665,7 +12665,7 @@ function renderDomainSections(domain, sections, sectionKeys) {
       row.innerHTML = `
         <input type="checkbox" id="v-${key}" ${checked ? 'checked' : ''} onchange="toggleVideo('${key}','${domain.id}',this)">
         <div class="video-num">#${vi+1}</div>
-        <label class="video-label" for="v-${key}">${title}${duration ? `<span style="font-family:var(--font-mono);font-size:0.65rem;color:var(--muted);margin-left:6px;">${duration}</span>` : ''}${url ? ` <a href="${url}" target="_blank" onclick="event.stopPropagation();" style="color:var(--accent);font-size:0.72rem;text-decoration:none;margin-left:6px;font-family:var(--font-mono);">▶ Watch</a>` : ''}</label>
+        <label class="video-label" for="v-${key}">${title}${url ? ` <a href="${url}" target="_blank" onclick="event.stopPropagation();" style="color:var(--accent);font-size:0.72rem;text-decoration:none;margin-left:6px;font-family:var(--font-mono);">▶ Watch</a>` : ''}</label>
       `;
       block.appendChild(row);
     });
@@ -14836,7 +14836,7 @@ function PR_renderDomainSections(domain, sections, sectionKeys) {
       row.innerHTML = `
         <input type="checkbox" id="pr-v-${key}" ${checked ? 'checked' : ''} onchange="PR_toggleVideo('${key}','${domain.id}',this)">
         <div class="video-num">#${vi+1}</div>
-        <label class="video-label" for="pr-v-${key}">${title}${duration ? `<span style="font-family:var(--font-mono);font-size:0.65rem;color:var(--muted);margin-left:6px;">${duration}</span>` : ''}${url ? ` <a href="${url}" target="_blank" onclick="event.stopPropagation();" style="color:var(--accent);font-size:0.72rem;text-decoration:none;margin-left:6px;font-family:var(--font-mono);">▶ Watch</a>` : ''}</label>
+        <label class="video-label" for="pr-v-${key}">${title}${url ? ` <a href="${url}" target="_blank" onclick="event.stopPropagation();" style="color:var(--accent);font-size:0.72rem;text-decoration:none;margin-left:6px;font-family:var(--font-mono);">▶ Watch</a>` : ''}</label>
       `;
       block.appendChild(row);
     });
@@ -16597,7 +16597,7 @@ function renderDomainSections(domain, sections, sectionKeys) {
       row.innerHTML = `
         <input type="checkbox" id="v-${key}" ${checked ? 'checked' : ''} onchange="toggleVideo('${key}','${domain.id}',this)">
         <div class="video-num">#${vi+1}</div>
-        <label class="video-label" for="v-${key}">${title}${duration ? `<span style="font-family:var(--font-mono);font-size:0.65rem;color:var(--muted);margin-left:6px;">${duration}</span>` : ''}${url ? ` <a href="${url}" target="_blank" onclick="event.stopPropagation();" style="color:var(--accent);font-size:0.72rem;text-decoration:none;margin-left:6px;font-family:var(--font-mono);">▶ Watch</a>` : ''}</label>
+        <label class="video-label" for="v-${key}">${title}${url ? ` <a href="${url}" target="_blank" onclick="event.stopPropagation();" style="color:var(--accent);font-size:0.72rem;text-decoration:none;margin-left:6px;font-family:var(--font-mono);">▶ Watch</a>` : ''}</label>
       `;
       block.appendChild(row);
     });
@@ -18358,7 +18358,7 @@ function PR_renderDomainSections(domain, sections, sectionKeys) {
       row.innerHTML = `
         <input type="checkbox" id="pr-v-${key}" ${checked ? 'checked' : ''} onchange="PR_toggleVideo('${key}','${domain.id}',this)">
         <div class="video-num">#${vi+1}</div>
-        <label class="video-label" for="pr-v-${key}">${title}${duration ? `<span style="font-family:var(--font-mono);font-size:0.65rem;color:var(--muted);margin-left:6px;">${duration}</span>` : ''}${url ? ` <a href="${url}" target="_blank" onclick="event.stopPropagation();" style="color:var(--accent);font-size:0.72rem;text-decoration:none;margin-left:6px;font-family:var(--font-mono);">▶ Watch</a>` : ''}</label>
+        <label class="video-label" for="pr-v-${key}">${title}${url ? ` <a href="${url}" target="_blank" onclick="event.stopPropagation();" style="color:var(--accent);font-size:0.72rem;text-decoration:none;margin-left:6px;font-family:var(--font-mono);">▶ Watch</a>` : ''}</label>
       `;
       block.appendChild(row);
     });
