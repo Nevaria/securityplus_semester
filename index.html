@@ -7218,6 +7218,27 @@ const MESSER_VIDEOS = {
   }
 };
 
+const MESSER_OBJ_MAP = (() => {
+  const map = {};
+  Object.values(MESSER_VIDEOS).forEach(domain => {
+    Object.keys(domain).forEach(sectionKey => {
+      const m = sectionKey.match(/^(\d+\.\d+)\s*\u2013\s*(.+)$/);
+      if (m) map[m[1]] = m[2];
+    });
+  });
+  return map;
+})();
+
+function messerHintFor(taskText) {
+  const tags = [...taskText.matchAll(/(\d+\.\d+)/g)].map(m => m[1]);
+  const seen = [];
+  tags.forEach(t => { if (!seen.includes(t) && MESSER_OBJ_MAP[t]) seen.push(t); });
+  if (!seen.length) return '';
+  const parts = seen.map(t => `${t} \u2013 ${MESSER_OBJ_MAP[t]}`);
+  return 'Messer: ' + parts.join(', ');
+}
+
+
 const EXAM_CHECKLIST = [
   { id:'ex1', title:'Professor Messer Practice Exam A', sub:'PDF Exam A · 5 PBQs + 85 MC · 90 min', url:'https://www.professormesser.com/sy0-701-practice-exams/' },
   { id:'ex2', title:'Professor Messer Practice Exam B', sub:'PDF Exam B · 5 PBQs + 85 MC · 90 min', url:'https://www.professormesser.com/sy0-701-practice-exams/' },
@@ -8893,9 +8914,13 @@ function renderSchedule() {
           ${d.tasks.map((t, ti) => {
             const tk = `w${week.num}-${d.day}-t${ti}`;
             const tChecked = cpState.tasks?.[tk]?.checked || false;
+            const hint = messerHintFor(t);
             return `<div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:5px;">
               <input type="checkbox" id="task-${tk}" ${tChecked ? 'checked' : ''} onchange="toggleTask('${tk}',this)" style="margin-top:3px;flex-shrink:0;accent-color:var(--gold);">
-              <label for="task-${tk}" style="font-size:0.86rem;line-height:1.5;color:${tChecked ? 'var(--muted)' : effectiveStatus === 'overdue' ? 'var(--text2)' : 'var(--text)'};text-decoration:${tChecked ? 'line-through' : 'none'};cursor:pointer;">${t}</label>
+              <div style="flex:1;">
+              <label for="task-${tk}" style="font-size:0.86rem;line-height:1.5;color:${tChecked ? 'var(--muted)' : effectiveStatus === 'overdue' ? 'var(--text2)' : 'var(--text)'};text-decoration:${tChecked ? 'line-through' : 'none'};cursor:pointer;display:block;">${t}</label>
+              ${hint ? `<div style="font-size:0.72rem;color:var(--muted);margin-top:2px;font-family:var(--font-mono);">${hint}</div>` : ''}
+              </div>
             </div>`;
           }).join('')}
         </div>
@@ -10248,9 +10273,13 @@ function PR_renderSchedule() {
           ${d.tasks.map((t, ti) => {
             const tk = `w${week.num}-${d.day}-t${ti}`;
             const tChecked = cpState.tasks?.[tk]?.checked || false;
+            const hint = messerHintFor(t);
             return `<div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:5px;">
               <input type="checkbox" id="task-${tk}" ${tChecked ? 'checked' : ''} onchange="toggleTask('${tk}',this)" style="margin-top:3px;flex-shrink:0;accent-color:var(--gold);">
-              <label for="task-${tk}" style="font-size:0.86rem;line-height:1.5;color:${tChecked ? 'var(--muted)' : effectiveStatus === 'overdue' ? 'var(--text2)' : 'var(--text)'};text-decoration:${tChecked ? 'line-through' : 'none'};cursor:pointer;">${t}</label>
+              <div style="flex:1;">
+              <label for="task-${tk}" style="font-size:0.86rem;line-height:1.5;color:${tChecked ? 'var(--muted)' : effectiveStatus === 'overdue' ? 'var(--text2)' : 'var(--text)'};text-decoration:${tChecked ? 'line-through' : 'none'};cursor:pointer;display:block;">${t}</label>
+              ${hint ? `<div style="font-size:0.72rem;color:var(--muted);margin-top:2px;font-family:var(--font-mono);">${hint}</div>` : ''}
+              </div>
             </div>`;
           }).join('')}
         </div>
@@ -12070,9 +12099,13 @@ function renderSchedule() {
           ${d.tasks.map((t, ti) => {
             const tk = `w${week.num}-${d.day}-t${ti}`;
             const tChecked = cpState.tasks?.[tk]?.checked || false;
+            const hint = messerHintFor(t);
             return `<div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:5px;">
               <input type="checkbox" id="task-${tk}" ${tChecked ? 'checked' : ''} onchange="toggleTask('${tk}',this)" style="margin-top:3px;flex-shrink:0;accent-color:var(--gold);">
-              <label for="task-${tk}" style="font-size:0.86rem;line-height:1.5;color:${tChecked ? 'var(--muted)' : effectiveStatus === 'overdue' ? 'var(--text2)' : 'var(--text)'};text-decoration:${tChecked ? 'line-through' : 'none'};cursor:pointer;">${t}</label>
+              <div style="flex:1;">
+              <label for="task-${tk}" style="font-size:0.86rem;line-height:1.5;color:${tChecked ? 'var(--muted)' : effectiveStatus === 'overdue' ? 'var(--text2)' : 'var(--text)'};text-decoration:${tChecked ? 'line-through' : 'none'};cursor:pointer;display:block;">${t}</label>
+              ${hint ? `<div style="font-size:0.72rem;color:var(--muted);margin-top:2px;font-family:var(--font-mono);">${hint}</div>` : ''}
+              </div>
             </div>`;
           }).join('')}
         </div>
@@ -13269,9 +13302,13 @@ function PR_renderSchedule() {
           ${d.tasks.map((t, ti) => {
             const tk = `w${week.num}-${d.day}-t${ti}`;
             const tChecked = cpState.tasks?.[tk]?.checked || false;
+            const hint = messerHintFor(t);
             return `<div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:5px;">
               <input type="checkbox" id="task-${tk}" ${tChecked ? 'checked' : ''} onchange="toggleTask('${tk}',this)" style="margin-top:3px;flex-shrink:0;accent-color:var(--gold);">
-              <label for="task-${tk}" style="font-size:0.86rem;line-height:1.5;color:${tChecked ? 'var(--muted)' : effectiveStatus === 'overdue' ? 'var(--text2)' : 'var(--text)'};text-decoration:${tChecked ? 'line-through' : 'none'};cursor:pointer;">${t}</label>
+              <div style="flex:1;">
+              <label for="task-${tk}" style="font-size:0.86rem;line-height:1.5;color:${tChecked ? 'var(--muted)' : effectiveStatus === 'overdue' ? 'var(--text2)' : 'var(--text)'};text-decoration:${tChecked ? 'line-through' : 'none'};cursor:pointer;display:block;">${t}</label>
+              ${hint ? `<div style="font-size:0.72rem;color:var(--muted);margin-top:2px;font-family:var(--font-mono);">${hint}</div>` : ''}
+              </div>
             </div>`;
           }).join('')}
         </div>
